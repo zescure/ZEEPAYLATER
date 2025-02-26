@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZEEPAYLATER - Top Up Game dengan Paylater</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #10B981;
+            --secondary: #064E3B;
+            --accent: #ECFDF5;
+            --text-dark: #1F2937;
+            --text-light: #F9FAFB;
+            --background: #FFFFFF;
+            --gray-light: #F3F4F6;
+            --warning: #FBBF24;
+            --danger: #EF4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: #F3F4F6;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--background);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-weight: 700;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .profile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .balance-card {
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .balance-title {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+        
+        .balance-amount {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .paylater-info {
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .paylater-limit {
+            font-size: 12px;
+        }
+        
+        .paylater-limit span {
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .pay-now-btn {
+            background-color: var(--warning);
+            color: var(--text-dark);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 16px;
+        }
+        
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .menu-icon {
+            width: 48px;
+            height: 48px;
+            background-color: var(--accent);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .menu-label {
+            font-size: 12px;
+            color: var(--text-dark);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0 16px 16px;
+        }
+        
+        .game-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .game-img {
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .game-info {
+            padding: 12px;
+        }
+        
+        .game-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .game-publisher {
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        .promo-banner {
+            margin: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .promo-img {
+            width: 100%;
+            height: auto;
+        }
+        
+        .nav-bottom {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 480px;
+            background-color: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: #6B7280;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+        
+        .nav-icon {
+            margin-bottom: 4px;
+            font-size: 20px;
+        }
+        
+        /* Gaya untuk container teks bergerak */
+        #moving-text-container {
+            width: 100%;
+            height: 50px;
+            border: 2px solid #10B981; /* Border terpisah */
+            overflow: hidden;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        /* Gaya untuk teks bergerak */
+        #moving-text {
+            position: absolute;
+            bottom: -50px; /* Mulai di bawah */
+            animation: moveUp 9s linear infinite; /* Animasi bergerak ke atas */
+            white-space: nowrap;
+            font-size: 16px;
+            font-weight: bold;
+            color: #10B981;
+        }
+
+        /* Animasi bergerak dari bawah ke atas */
+        @keyframes moveUp {
+            0% {
+                bottom: -50px; /* Mulai di bawah */
+            }
+            100% {
+                bottom: 100%; /* Bergerak ke atas hingga keluar dari kotak */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-bolt"></i> ZEEPAYLATER
+            </div>
+            <div class="profile-icon">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+        
+        <div class="balance-card">
+            <div class="balance-title">Saldo ZEEPAYLATER</div>
+            <div class="balance-amount">Rp 1.500.000</div>
+            <div class="paylater-info">
+                <div class="paylater-limit">
+                    Limit paylater: <span>Rp 2.000.000</span>
+                </div>
+       
+                <button class="pay-now-btn">
+                    <i class="fas fa-wallet"></i> Bayar Cicilan
+                </button>
+            </div>
+            <marquee behavior="alternate">Jatuh Tempo Tagihan Anda: Tanggal 1 Setiap Bulan</marquee>
+        </div>
+        
+        <div id="moving-text-container">
+        <div id="moving-text">
+               Selamat datang di ZEEPAYLATER! ZEZY NZY
+        </div>
+        </div>
+        
+        <div class="menu-grid">
+            <div class="menu-item">
+                <div class="menu-icon">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="menu-label">Top Up Game</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="menu-label">E-Wallet</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="menu-label">Tagihan</div>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div class="menu-label">Bantuan</div>
+            </div>
+        </div>
+        
+        <div class="promo-banner">
+            <img class="promo-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4huizPVMVZix-EZ7Q5AC94YyuiYKiyXLXbQ&s" alt="Promo Banner" />
+        </div>
+        
+        <div class="section-title">
+            <i class="fas fa-fire"></i> Game Populer
+        </div>
+        
+        <div class="game-grid">
+            <div class="game-card">
+            <button onclick="openPopup()">
+            </button>
+                <div class="game-img" style="background-image: url('/api/placeholder/180/120')"></div>
+                <div class="game-info">
+                    <div class="game-name">Mobile Legends</div>
+                    <div class="game-publisher">Moonton</div>
+                </div>
+            </div>
+            <div class="game-card">
+                <div class="game-img" style="background-image: url('/api/placeholder/180/120')"></div>
+                <div class="game-info">
+                    <div class="game-name">Free Fire</div>
+                    <div class="game-publisher">Garena</div>
+                </div>
+            </div>
+            <div class="game-card">
+                <div class="game-img" style="background-image: url('/api/placeholder/180/120')"></div>
+                <div class="game-info">
+                    <div class="game-name">PUBG Mobile</div>
+                    <div class="game-publisher">Tencent Games</div>
+                </div>
+            </div>
+            <div class="game-card">
+                <div class="game-img" style="background-image: url('/api/placeholder/180/120')"></div>
+                <div class="game-info">
+                    <div class="game-name">Valorant</div>
+                    <div class="game-publisher">Riot Games</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-title">
+            <i class="fas fa-clock"></i> Terakhir Dimainkan
+        </div>
+        
+        <div class="game-grid">
+            <div class="game-card">
+                <div class="game-img" style="background-image: url('/api/placeholder/180/120')"></div>
+                <div class="game-info">
+                    <div class="game-name">Honor of Kings</div>
+                    <div class="game-publisher">Tencent Games</div>
+                </div>
+            </div>
+            <div class="game-card">
+                <div class="game-img" style="background-image: url('/api/placeholder/180/120')"></div>
+                <div class="game-info">
+                    <div class="game-name">Genshin Impact</div>
+                    <div class="game-publisher">MiHoYo</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Bottom -->
+        <div style="height: 70px;"></div> <!-- Spacer for fixed bottom nav -->
+        <div class="nav-bottom">
+            <div class="nav-item active">
+                <div class="nav-icon"><i class="fas fa-home"></i></div>
+                <div>Beranda</div>
+            </div>
+  
+        </div>
+    </div>
+</body>
+</htm>
