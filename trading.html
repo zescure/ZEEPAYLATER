@@ -2,36 +2,34 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <title>LNX Whale Simulator Dynamic (Fixed Pool)</title>
+  <title>LNX AMM Realistic Simulator</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * { box-sizing: border-box; margin:0; padding:0 }
-    body { background:#121212; color:#e0e0e0; font-family:'Segoe UI',sans-serif;
+    * { box-sizing:border-box; margin:0; padding:0 }
+    body { background:#121212; color:#e0e0e0; font-family:sans-serif;
            display:flex; flex-direction:column; align-items:center; padding:20px }
     h1 { margin-bottom:20px }
     #container { display:flex; flex-wrap:wrap; gap:20px;
                  justify-content:center; width:100%; max-width:1200px }
-    #chartPanel, #controlPanel {
+    #chart, #panel {
       background:#1e1e1e; padding:20px; border-radius:8px;
       box-shadow:0 4px 8px rgba(0,0,0,0.5)
     }
-    #chartPanel { flex:2 1 600px }
-    #controlPanel { flex:1 1 350px }
+    #chart { flex:2 1 600px }
+    #panel { flex:1 1 350px }
     .stat { margin:12px 0; font-size:16px }
     .stat span { font-weight:bold; color:#90caf9 }
-    #fakeOrder { color:#ffb74d; min-height:1.2em }
-    #news { color:#f48fb1; margin:12px 0; min-height:1.5em }
-    .trade-box { display:flex; align-items:center; margin:12px 0 }
-    .trade-box input {
+    .trade { display:flex; margin:12px 0 }
+    .trade input {
       flex:1; padding:8px; border:1px solid #333; border-radius:4px;
       margin-right:8px; background:#121212; color:#e0e0e0; font-size:14px
     }
-    .trade-box button {
+    .trade button {
       padding:8px 16px; border:none; border-radius:4px;
-      background:#42a5f5; color:#fff; font-weight:bold; cursor:pointer;
-      transition:background .2s
+      background:#42a5f5; color:#fff; cursor:pointer; transition:background .2s
     }
-    .trade-box button:hover { background:#1e88e5 }
+    .trade button:hover { background:#1e88e5 }
+    #news { margin:12px 0; min-height:1.5em; color:#f48fb1 }
     table { width:100%; border-collapse:collapse; margin-top:10px; font-size:14px }
     th,td { padding:6px; border:1px solid #333; text-align:left }
     th { background:#2e2e2e }
@@ -39,218 +37,165 @@
   </style>
 </head>
 <body>
-  <h1>🪙 LNX Whale Simulator Dynamic (Fixed Pool)</h1>
+  <h1>🪙 LNX AMM Realistic Simulator</h1>
   <div id="container">
-    <div id="chartPanel">
-      <canvas id="priceChart"></canvas>
-    </div>
-    <div id="controlPanel">
+    <!-- Chart -->
+    <div id="chart"><canvas id="priceChart"></canvas></div>
+    <!-- Control Panel -->
+    <div id="panel">
       <div class="stat">Harga LNX: <span id="priceDisplay"></span></div>
       <div class="stat">Pool: <span id="poolInfo"></span></div>
       <div class="stat">Saldo Lu: <span id="userInfo"></span></div>
-      <div class="stat">Unrealized PnL (Lu): <span id="unrealizedPnL"></span></div>
-      <div class="stat">Realized PnL (Lu): <span id="realizedPnL"></span></div>
-      <div class="stat" id="fakeOrder">Fake Order: —</div>
-      <div class="stat" id="news"></div>
+      <div class="stat">Unrealized PnL: <span id="unrealized"></span></div>
+      <div class="stat">Realized PnL: <span id="realized"></span></div>
+      <div id="news"></div>
       <hr style="border-color:#333;margin:12px 0">
-      <div class="trade-box">
-        <input type="number" id="buyInput" placeholder="Masukkan LNX beli">
-        <button onclick="buyLNX()">BUY</button>
+      <div class="trade">
+        <input type="number" id="buyRp" placeholder="Rp untuk beli">
+        <button onclick="swap('BUY')">BUY LNX</button>
       </div>
-      <div class="trade-box">
-        <input type="number" id="sellInput" placeholder="Masukkan LNX jual">
-        <button onclick="sellLNX()">SELL</button>
+      <div class="trade">
+        <input type="number" id="sellLnx" placeholder="LNX untuk jual">
+        <button onclick="swap('SELL')">SELL LNX</button>
       </div>
       <hr style="border-color:#333;margin:12px 0">
-      <div class="stat"><strong>Top 5 Whales</strong></div>
+      <div><strong>Top 5 Whales</strong></div>
       <table>
-        <thead><tr><th>Whale</th><th>Holdings</th><th>PnL</th></tr></thead>
+        <thead><tr><th>Whale</th><th>Hold</th><th>PnL</th></tr></thead>
         <tbody id="whaleTable"></tbody>
       </table>
     </div>
   </div>
-  <footer>AMM + Dynamic Whales • supply 21 jt • Fixed‑Pool Logic • by Lionor AI Beta</footer>
+  <footer>AMM constant‑product • supply 21 jt • by Lionor AI Beta</footer>
 
   <script>
-  // --- Init Params ---
+  // PARAMETER
   const totalSupply   = 21_000_000;
   const whaleThreshold= 500_000;
+  const noisePct      = 0.005; // ±0.5%
 
-  // user state
+  // USER
   let user = {
-    name: 'You',
-    lnx: 1_000_000,
-    cost: 1_000_000 * 100,     // cost basis awal
-    realizedPnL: 0
+    name:'You',
+    lnx:1_000_000,
+    cost:1_000_000*100,
+    realized:0
   };
   let userRp = 1_000_000_000;
 
-  // pool & price (poolLNX dihitung dinamis nanti)
-  let poolRp = 0, price = 100;
-
-  // create dynamic whales (9 selain user)
-  const whales = [ user ];
+  // LAINNYA (9 random whales)
+  const whales = [user];
   const names = ['Alice','Bob','Charlie','Doni','Siti','Andi','Rina','Budi','Wati','Chandra'];
   for (let i=1; i<10; i++){
-    const name = names[i];
-    const lnx  = Math.floor((Math.random()*1.5 + 0.5) * 1_000_000); // 0.5–2M
-    whales.push({ name, lnx, cost: lnx * 100, realizedPnL: 0 });
+    const share = (Math.random()*1.5+0.5)*1_000_000; 
+    whales.push({ name:names[i], lnx:Math.floor(share), cost:share*100, realized:0 });
   }
 
-  // Chart.js setup
-  const ctx = document.getElementById('priceChart').getContext('2d');
-  const chartData = {
-    labels: Array(30).fill(''),
-    datasets: [{ label:'Harga LNX (Rp)', data:Array(30).fill(price),
-                 borderColor:'#42a5f5', tension:0.3, pointRadius:0 }]
-  };
-  const priceChart = new Chart(ctx, {
-    type:'line', data:chartData,
-    options:{ animation:false, scales:{ x:{display:false}, y:{ticks:{color:'#90caf9'}}} }
-  });
-
-  function fmtRp(x){
-    return 'Rp'+x.toLocaleString('id-ID',{minimumFractionDigits:2});
-  }
-
-  // hitung poolLNX dari totalSupply - totalHeld
-  function updatePool(){
-    const totalHeld = whales.reduce((sum, w) => sum + w.lnx, 0);
-    poolLNX = Math.max(totalSupply - totalHeld, 0);
-    // poolRp sejajar untuk harga awal di tree
+  // POOL & PRICE
+  let poolLNX, poolRp, k, price;
+  function initPool(){
+    const held = whales.reduce((s,w)=>s+w.lnx,0);
+    poolLNX = Math.max(totalSupply - held, 0);
+    price   = 100;
     poolRp  = poolLNX * price;
+    k       = poolLNX * poolRp;
   }
+  initPool();
 
+  // Chart.js
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  const chartData = { labels:Array(30).fill(''), datasets:[{ data:Array(30).fill(price), borderColor:'#42a5f5', tension:0.3, pointRadius:0 }]};
+  const priceChart = new Chart(ctx,{ type:'line', data:chartData, options:{ animation:false, scales:{ x:{display:false}, y:{ticks:{color:'#90caf9'}}}}});
+
+  // UTIL
+  function fmtRp(x){ return 'Rp'+x.toLocaleString('id-ID',{minFractionDigits:2}); }
+  function updatePrice(){
+    price = poolRp / poolLNX;
+  }
   function render(){
-    // recalc price
-    price = Math.max(poolRp / (poolLNX || 1), 0.01);
+    updatePrice();
+    const unreal = user.lnx*price - user.cost;
+    document.getElementById('priceDisplay').innerText = fmtRp(price);
+    document.getElementById('poolInfo').innerText     = `${poolLNX.toLocaleString()} LNX / ${fmtRp(poolRp)}`;
+    document.getElementById('userInfo').innerText     = `${user.lnx.toLocaleString()} LNX / ${fmtRp(userRp)}`;
+    document.getElementById('unrealized').innerText   = fmtRp(unreal);
+    document.getElementById('realized').innerText     = fmtRp(user.realized);
 
-    // user pnl
-    const unreal = user.lnx * price - user.cost;
-
-    // update UI
-    document.getElementById('priceDisplay').innerText   = fmtRp(price);
-    document.getElementById('poolInfo').innerText       =
-      `${poolLNX.toLocaleString()} LNX / ${fmtRp(poolRp)}`;
-    document.getElementById('userInfo').innerText       =
-      `${user.lnx.toLocaleString()} LNX / ${fmtRp(userRp)}`;
-    document.getElementById('unrealizedPnL').innerText  = fmtRp(unreal);
-    document.getElementById('realizedPnL').innerText    = fmtRp(user.realizedPnL);
-
-    // update chart
+    // Chart
     priceChart.data.datasets[0].data.push(price);
     priceChart.data.datasets[0].data.shift();
     priceChart.update();
 
-    // top 5 whales by holdings
-    const tbody = document.getElementById('whaleTable');
-    tbody.innerHTML = '';
-    whales
-      .slice() // clone
-      .sort((a,b) => b.lnx - a.lnx)
-      .slice(0,5)
-      .forEach(w => {
-        const pnl = w.lnx * price - w.cost;
-        const tr  = document.createElement('tr');
-        tr.innerHTML = `<td>${w.name}</td>
-                        <td>${w.lnx.toLocaleString()} LNX</td>
-                        <td>${fmtRp(pnl)}</td>`;
-        tbody.appendChild(tr);
-      });
-  }
-
-  // fake market noise + fake order
-  function marketNoise(){
-    const pct    = (Math.random() - 0.5) * 0.02; // ±1%
-    const deltaRp= poolRp * pct;
-    const action = pct > 0 ? 'BUY' : 'SELL';
-    const name   = names[Math.floor(Math.random()*names.length)];
-    const amtRp  = Math.abs(deltaRp);
-    const amtLNX = amtRp / price;
-
-    // apply ke pool
-    if (action === 'BUY' && poolLNX >= amtLNX){
-      poolRp += amtRp; poolLNX -= amtLNX;
-    } else if (action==='SELL' && poolRp >= amtRp){
-      poolRp -= amtRp; poolLNX += amtLNX;
-    }
-
-    document.getElementById('fakeOrder').innerText =
-      `Fake Order: ${name} ${action} ${amtLNX.toFixed(0)} LNX`;
-  }
-
-  // random whales trade among themselves
-  function updateWhales(){
-    whales.forEach(w => {
-      if (w === user) return;
-      if (Math.random() < 0.2){
-        const action = Math.random() < 0.5 ? 'BUY' : 'SELL';
-        const amtLNX = Math.floor(Math.random() * 50_000);
-        if (action==='BUY'){
-          const cost = amtLNX * price;
-          w.cost += cost; w.lnx += amtLNX;
-        } else {
-          const sellAmt = Math.min(w.lnx, amtLNX);
-          const gain    = sellAmt * price;
-          // reduce cost proportionally
-          const redCost = (w.cost / w.lnx) * sellAmt;
-          w.cost -= redCost; w.lnx -= sellAmt;
-          w.realizedPnL += gain - redCost;
-        }
-      }
+    // Top5 whales
+    const tb = document.getElementById('whaleTable');
+    tb.innerHTML = '';
+    whales.sort((a,b)=>b.lnx - a.lnx).slice(0,5).forEach(w=>{
+      const pnl = w.lnx*price - w.cost;
+      const tr  = `<tr><td>${w.name}</td><td>${w.lnx.toLocaleString()}</td><td>${fmtRp(pnl)}</td></tr>`;
+      tb.insertAdjacentHTML('beforeend', tr);
     });
   }
 
-  function showNews(type, amt){
-    const text = type==='BUY'
-      ? `Berita Positif: Founder beli ${amt.toLocaleString()} LNX, market optimis!`
-      : `Berita Negatif: Founder jual ${amt.toLocaleString()} LNX, pasar panik!`;
-    const el = document.getElementById('news');
-    el.innerText = text;
-    setTimeout(()=> el.innerText = '', 5000);
-  }
-
-  function buyLNX(){
-    const amt = parseFloat(document.getElementById('buyInput').value);
-    if (!amt || amt <= 0) return alert('Jumlah beli tidak valid!');
-    updatePool();
-    if (poolLNX < amt) return alert('Supply LNX tidak cukup!');
-    const cost = amt * price;
-    if (userRp < cost) return alert('Saldo Rp tidak cukup!');
-    // exec trade
-    userRp    -= cost;
-    user.cost += cost;
-    user.lnx  += amt;
-    if (amt >= whaleThreshold) showNews('BUY', amt);
-  }
-
-  function sellLNX(){
-    const amt = parseFloat(document.getElementById('sellInput').value);
-    if (!amt || amt <= 0) return alert('Jumlah jual tidak valid!');
-    if (user.lnx < amt)   return alert('Token LNX tidak cukup!');
-    updatePool();
-    const gain = amt * price;
-    if (poolRp < gain)    return alert('Pool Rp tidak cukup!');
-    // realized PnL
-    const ratio = amt / user.lnx;
-    const costRemoved = user.cost * ratio;
-    user.realizedPnL += gain - costRemoved;
-    user.cost -= costRemoved;
-    // exec trade
-    userRp   += gain;
-    user.lnx -= amt;
-  }
-
-  // main loop tiap detik
-  setInterval(() => {
-    updateWhales();
-    updatePool();
-    marketNoise();
+  // AMM swap: type BUY uses input Rp, gets LNX; SELL uses input LNX, gets Rp
+  function swap(type){
+    document.getElementById('news').innerText = '';
+    if (type==='BUY'){
+      const dx = parseFloat(document.getElementById('buyRp').value);
+      if (!dx||dx<=0|| userRp<dx) return alert('Nominal Rp tidak valid / cukup');
+      // dy = poolLNX - k/(poolRp+dx)
+      const newRp = poolRp + dx;
+      const newLNX= k / newRp;
+      const dy    = poolLNX - newLNX;
+      if (dy <= 0) return alert('Slippage terlalu besar!');
+      // update state
+      userRp      -= dx;
+      user.cost   += dx;
+      user.lnx    += dy;
+      poolRp      += dx;
+      poolLNX     -= dy;
+      user.realized += 0; // belum realized
+      if (dy>=whaleThreshold) document.getElementById('news').innerText = 
+        `Berita Positif: Founder beli ${Math.floor(dy).toLocaleString()} LNX!`;
+    } else {
+      const dx = parseFloat(document.getElementById('sellLnx').value);
+      if (!dx||dx<=0|| user.lnx<dx) return alert('Nominal LNX tidak valid / cukup');
+      // dy = poolRp - k/(poolLNX+dx)
+      const newLNX= poolLNX + dx;
+      const newRp = k / newLNX;
+      const dy    = poolRp - newRp;
+      if (dy <= 0) return alert('Slippage terlalu besar!');
+      // update state
+      userRp      += dy;
+      user.realized += dy - (user.cost*(dx/user.lnx));
+      user.cost   -= user.cost*(dx/user.lnx);
+      user.lnx    -= dx;
+      poolRp      -= dy;
+      poolLNX     += dx;
+      if (dx>=whaleThreshold) document.getElementById('news').innerText =
+        `Berita Negatif: Founder jual ${dx.toLocaleString()} LNX!`;
+    }
     render();
-  }, 1000);
+  }
 
-  // init
-  updatePool();
+  // fake noise: small constant-product trades
+  function noise(){
+    const dxRp = (Math.random()-0.5)*noisePct * poolRp;
+    // BUY noise
+    if (dxRp>0){
+      const newRp = poolRp + dxRp, newLNX = k/newRp;
+      const dy    = poolLNX - newLNX;
+      poolRp += dxRp; poolLNX -= dy;
+    } else {
+      const dxLNX= Math.abs(dxRp)/price;
+      const newLNX= poolLNX + dxLNX, newRp = k/newLNX;
+      const dy    = poolRp - newRp;
+      if (dy>0){ poolRp -= dy; poolLNX += dxLNX; }
+    }
+    document.getElementById('fakeOrder').innerText = `Fake Order: ${names[Math.floor(Math.random()*names.length)]}`;
+  }
+
+  // Loop
+  setInterval(() => { noise(); render(); }, 1000);
   render();
   </script>
 </body>
