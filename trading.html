@@ -1,135 +1,179 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LNX Exchange Simulator DYNAMIC</title>
+  <meta charset="utf-8">
+  <title>LNX Realistic Exchange Simulator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      background-color: #0f0f0f;
-      color: #00ffcc;
-      font-family: 'Courier New', monospace;
+      background: #0a0a0a;
+      color: #0cffb3;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
     }
-    h1 { color: #ffffff; }
-    .panel {
-      background-color: #1c1c1c;
+    h1 { color: #fff; }
+    #container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    #chartPanel, #controlPanel {
+      background: #101010;
       padding: 20px;
-      border-radius: 10px;
-      width: 420px;
+      border-radius: 8px;
     }
-    .value {
-      margin: 10px 0;
-      font-size: 18px;
-    }
-    input {
-      width: 100px;
-      padding: 5px;
-      margin-right: 10px;
-    }
+    #chartPanel { width: 600px; }
+    #controlPanel { width: 300px; }
+    .stat { margin: 10px 0; }
+    input { width: 100px; padding: 5px; margin-right: 5px; }
     button {
-      background-color: #00ffcc;
-      color: #000;
+      padding: 8px 16px;
+      margin: 5px 0;
+      background: #0cffb3;
       border: none;
-      padding: 10px 20px;
-      font-weight: bold;
       cursor: pointer;
-      margin-top: 10px;
-      border-radius: 5px;
+      font-weight: bold;
     }
-    button:hover {
-      background-color: #00ccaa;
-    }
+    button:hover { background: #0aaa82; }
   </style>
 </head>
 <body>
-  <h1>🪙 LNX Exchange Simulator</h1>
-  <div class="panel">
-    <div class="value" id="price">Harga LNX: </div>
-    <div class="value" id="marketCap">Market Cap: </div>
-    <div class="value" id="volume">Volume 24h: </div>
-    <div class="value" id="yourTokens">Token Lu: </div>
-    <div class="value" id="yourValue">Cuan Lu: </div>
-    <div class="value" id="yourRupiah">Saldo Lu: </div>
-
-    <hr>
-
-    <input type="number" id="buyAmount" placeholder="Jumlah Beli">
-    <button onclick="buyLNX()">BUY</button><br><br>
-
-    <input type="number" id="sellAmount" placeholder="Jumlah Jual">
-    <button onclick="sellLNX()">SELL</button>
+  <h1>🪙 LNX Realistic Simulator</h1>
+  <div id="container">
+    <!-- Grafik Harga -->
+    <div id="chartPanel">
+      <canvas id="priceChart"></canvas>
+    </div>
+    <!-- Panel Kontrol -->
+    <div id="controlPanel">
+      <div class="stat" id="priceDisplay">Harga LNX: </div>
+      <div class="stat" id="poolInfo">Pool: </div>
+      <div class="stat" id="userInfo">Lu: </div>
+      <hr>
+      <div>
+        <input type="number" id="buyInput" placeholder="LNX mau beli">
+        <button onclick="buyLNX()">BUY</button>
+      </div>
+      <div>
+        <input type="number" id="sellInput" placeholder="LNX mau jual">
+        <button onclick="sellLNX()">SELL</button>
+      </div>
+      <button onclick="rugpull()">Withdraw All BNB (Rugpull!)</button>
+    </div>
   </div>
 
   <script>
-    const totalSupply = 1000000;
-    let userTokens = 500000;
-    let userRupiah = 100000000;
-    let price = 100;
-    let marketCap = totalSupply * price;
-    let volume = 5000;
+    // --- Parameter Awal ---
+    const totalSupply = 1_000_000;
+    let userLNX = totalSupply * 0.5;      
+    let userBNB = 100;                   // Saldo user
+    let poolLNX = totalSupply * 0.5;     // Pool = 500k LNX
+    let poolBNB = 100;                   // Pool = 100 BNB
+    let price = poolBNB / poolLNX;       // Harga awal
 
-    function formatRupiah(angka) {
-      return 'Rp' + angka.toLocaleString('id-ID', {minimumFractionDigits: 2});
+    // Chart.js setup
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    const data = {
+      labels: Array(30).fill(''),
+      datasets: [{
+        label: 'Harga LNX (BNB per LNX)',
+        data: Array(30).fill(price),
+        borderColor: '#0cffb3',
+        tension: 0.3,
+        pointRadius: 0
+      }]
+    };
+    const config = {
+      type: 'line',
+      data,
+      options: {
+        animation: false,
+        scales: {
+          x: { display: false },
+          y: { ticks: { color: '#0cffb3' } }
+        }
+      }
+    };
+    const priceChart = new Chart(ctx, config);
+
+    // Helper formatting
+    function fmt(num, fixed=4) { return num.toFixed(fixed); }
+
+    // Update tampilan & chart
+    function render() {
+      price = poolBNB / poolLNX;
+      document.getElementById('priceDisplay').innerText = 
+        `Harga LNX: ${fmt(price)} BNB`;
+      document.getElementById('poolInfo').innerText = 
+        `Pool → ${fmt(poolBNB)} BNB / ${fmt(poolLNX)} LNX`;
+      document.getElementById('userInfo').innerText = 
+        `Lu → ${fmt(userBNB)} BNB / ${fmt(userLNX)} LNX`;
+
+      // geser chart
+      priceChart.data.labels.push('');
+      priceChart.data.labels.shift();
+      priceChart.data.datasets[0].data.push(price);
+      priceChart.data.datasets[0].data.shift();
+      priceChart.update();
     }
 
-    function updateMarket() {
-      // Random market movement simulasi fake traders
-      const randomChange = price * ((Math.random() - 0.5) / 100);
-      price = Math.max(10, price + randomChange);
-
-      marketCap = price * totalSupply;
-
-      document.getElementById("price").innerText = "Harga LNX: " + formatRupiah(price);
-      document.getElementById("marketCap").innerText = "Market Cap: " + formatRupiah(marketCap);
-      document.getElementById("volume").innerText = "Volume 24h: " + formatRupiah(volume);
-      document.getElementById("yourTokens").innerText = "Token Lu: " + userTokens.toLocaleString() + " LNX";
-      document.getElementById("yourValue").innerText = "Cuan Lu: " + formatRupiah(userTokens * price);
-      document.getElementById("yourRupiah").innerText = "Saldo Lu: " + formatRupiah(userRupiah);
+    // Noise pasar tiap detik
+    function marketNoise() {
+      const noiseLNX = (Math.random() - 0.5) * 100; // ±50 LNX
+      // beli atau jual noise dari pool
+      if (noiseLNX > 0 && poolLNX > noiseLNX) {
+        // fake buyer
+        poolLNX -= noiseLNX;
+        poolBNB += noiseLNX * price;
+      } else if (noiseLNX < 0) {
+        // fake seller
+        const sellAmt = Math.min(poolLNX * 0.2, -noiseLNX);
+        poolLNX += sellAmt;
+        poolBNB -= sellAmt * price;
+      }
     }
 
+    // Aksi user
     function buyLNX() {
-      const input = parseFloat(document.getElementById("buyAmount").value);
-      if (!input || input <= 0) return alert("Masukin jumlah beli yang valid");
-
-      const cost = input * price;
-      const availableToken = totalSupply - userTokens;
-
-      if (userRupiah >= cost && input <= availableToken) {
-        userTokens += input;
-        userRupiah -= cost;
-        volume += cost;
-
-        // Harga naik dikit karena ada pembeli
-        const pump = price * (input / totalSupply) * 0.5;
-        price += pump;
-
-        updateMarket();
-      } else {
-        alert("Gagal beli: saldo tidak cukup atau supply habis.");
-      }
+      const amt = parseFloat(document.getElementById('buyInput').value);
+      if (!amt || amt <= 0) return alert('Masukin jumlah valid!');
+      const cost = amt * price;
+      if (userBNB < cost || poolLNX < amt) 
+        return alert('Saldo/pool nggak cukup!');
+      userBNB -= cost; poolBNB += cost;
+      userLNX += amt; poolLNX -= amt;
+      render();
     }
-
     function sellLNX() {
-      const input = parseFloat(document.getElementById("sellAmount").value);
-      if (!input || input <= 0) return alert("Masukin jumlah jual yang valid");
-
-      if (userTokens >= input) {
-        const gain = input * price;
-        userTokens -= input;
-        userRupiah += gain;
-        volume += gain;
-
-        // Harga turun dikit karena ada penjual
-        const dump = price * (input / totalSupply) * 0.5;
-        price = Math.max(10, price - dump);
-
-        updateMarket();
-      } else {
-        alert("Token lu gak cukup buat jual segitu.");
-      }
+      const amt = parseFloat(document.getElementById('sellInput').value);
+      if (!amt || amt <= 0) return alert('Jumlah jual invalid!');
+      if (userLNX < amt) return alert('Token lu kagak cukup!');
+      const gain = amt * price;
+      userLNX -= amt; poolLNX += amt;
+      userBNB += gain; poolBNB -= gain;
+      render();
     }
 
-    setInterval(updateMarket, 1000);
-    updateMarket();
+    // Rugpull: ambil semua BNB dari pool
+    function rugpull() {
+      userBNB += poolBNB;
+      poolBNB = 0;
+      render();
+      alert('RUGPULL! Pool BNB = 0 → harga = 0! Token nyangkut.');
+    }
+
+    // Loop update
+    setInterval(() => {
+      marketNoise();
+      render();
+    }, 1000);
+
+    // Inisialisasi tampilan
+    render();
   </script>
 </body>
 </html>
