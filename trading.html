@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LNX Exchange Simulator</title>
+  <title>LNX Exchange Simulator PRO</title>
   <style>
     body {
       background-color: #0f0f0f;
@@ -14,11 +14,16 @@
       background-color: #1c1c1c;
       padding: 20px;
       border-radius: 10px;
-      width: 400px;
+      width: 420px;
     }
     .value {
       margin: 10px 0;
       font-size: 18px;
+    }
+    input {
+      width: 100px;
+      padding: 5px;
+      margin-right: 10px;
     }
     button {
       background-color: #00ffcc;
@@ -27,7 +32,7 @@
       padding: 10px 20px;
       font-weight: bold;
       cursor: pointer;
-      margin-right: 10px;
+      margin-top: 10px;
       border-radius: 5px;
     }
     button:hover {
@@ -41,18 +46,25 @@
     <div class="value" id="price">Harga LNX: </div>
     <div class="value" id="marketCap">Market Cap: </div>
     <div class="value" id="volume">Volume 24h: </div>
-    <hr>
     <div class="value" id="yourTokens">Token Lu: </div>
     <div class="value" id="yourValue">Cuan Lu: </div>
-    <button onclick="buyLNX()">BUY</button>
+    <div class="value" id="yourRupiah">Saldo Lu: </div>
+
+    <hr>
+
+    <input type="number" id="buyAmount" placeholder="Jumlah Beli">
+    <button onclick="buyLNX()">BUY</button><br><br>
+
+    <input type="number" id="sellAmount" placeholder="Jumlah Jual">
     <button onclick="sellLNX()">SELL</button>
   </div>
 
   <script>
     const totalSupply = 1000000;
-    let userTokens = totalSupply * 0.5;
+    let userTokens = 500000;
+    let userRupiah = 100000000; // 100 juta saldo awal
     let price = 100;
-    let marketCap = totalSupply * price;
+    let marketCap = price * totalSupply;
     let volume = 5000;
 
     function formatRupiah(angka) {
@@ -60,30 +72,46 @@
     }
 
     function updateMarket() {
-      // Harga naik turun ±0.5%
-      const change = price * ((Math.random() - 0.5) / 100);
+      const change = price * ((Math.random() - 0.5) / 100); // naik turun ±0.5%
       price = Math.max(10, price + change);
       marketCap = price * totalSupply;
+
       document.getElementById("price").innerText = "Harga LNX: " + formatRupiah(price);
       document.getElementById("marketCap").innerText = "Market Cap: " + formatRupiah(marketCap);
       document.getElementById("volume").innerText = "Volume 24h: " + formatRupiah(volume);
       document.getElementById("yourTokens").innerText = "Token Lu: " + userTokens.toLocaleString() + " LNX";
       document.getElementById("yourValue").innerText = "Cuan Lu: " + formatRupiah(userTokens * price);
+      document.getElementById("yourRupiah").innerText = "Saldo Lu: " + formatRupiah(userRupiah);
     }
 
     function buyLNX() {
-      const amount = 1000; // beli 1000 LNX
-      if (userTokens + amount <= totalSupply) {
-        userTokens += amount;
-        volume += amount * price;
+      const input = parseFloat(document.getElementById("buyAmount").value);
+      if (!input || input <= 0) return alert("Masukin jumlah beli yang valid");
+
+      const cost = input * price;
+      const availableToken = totalSupply - userTokens;
+      if (userRupiah >= cost && input <= availableToken) {
+        userTokens += input;
+        userRupiah -= cost;
+        volume += cost;
+        updateMarket();
+      } else {
+        alert("Gagal beli: saldo tidak cukup atau supply habis.");
       }
     }
 
     function sellLNX() {
-      const amount = 1000; // jual 1000 LNX
-      if (userTokens >= amount) {
-        userTokens -= amount;
-        volume += amount * price;
+      const input = parseFloat(document.getElementById("sellAmount").value);
+      if (!input || input <= 0) return alert("Masukin jumlah jual yang valid");
+
+      if (userTokens >= input) {
+        const gain = input * price;
+        userTokens -= input;
+        userRupiah += gain;
+        volume += gain;
+        updateMarket();
+      } else {
+        alert("Token lu gak cukup buat jual segitu.");
       }
     }
 
