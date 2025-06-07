@@ -2,59 +2,26 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>LNX Realistic Simulator (Rp)</title>
+  <title>LNX Realistic Simulator v2 (Rp)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      background: #0a0a0a;
-      color: #0cffb3;
-      font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
+    body { background: #0a0a0a; color: #0cffb3; font-family: monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; }
     h1 { color: #fff; }
-    #container {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    #chartPanel, #controlPanel {
-      background: #101010;
-      padding: 20px;
-      border-radius: 8px;
-    }
+    #container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    #chartPanel, #controlPanel { background: #101010; padding: 20px; border-radius: 8px; }
     #chartPanel { width: 600px; }
     #controlPanel { width: 320px; }
     .stat { margin: 8px 0; }
     input { width: 120px; padding: 5px; margin-right: 5px; }
-    button {
-      padding: 8px 16px;
-      margin: 5px 0;
-      background: #0cffb3;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 4px;
-    }
+    button { padding: 8px 16px; margin: 5px 0; background: #0cffb3; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
     button:hover { background: #0aaa82; }
-    #fakeOrder {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #ffcc00;
-    }
+    #fakeOrder { margin-top: 12px; font-size: 14px; color: #ffcc00; }
   </style>
 </head>
 <body>
-  <h1>🪙 LNX Realistic Simulator (Rp)</h1>
+  <h1>🪙 LNX Simulator v2 (Rp)</h1>
   <div id="container">
-    <!-- Grafik Harga -->
-    <div id="chartPanel">
-      <canvas id="priceChart"></canvas>
-    </div>
-    <!-- Panel Kontrol -->
+    <div id="chartPanel"><canvas id="priceChart"></canvas></div>
     <div id="controlPanel">
       <div class="stat" id="priceDisplay">Harga LNX: </div>
       <div class="stat" id="poolInfo">Pool: </div>
@@ -73,123 +40,75 @@
   </div>
 
   <script>
-    // --- Parameter Awal ---
+    // --- Inisialisasi ---
     const totalSupply = 10_000_000;
-    let userLNX   = totalSupply * 0.5;      // 50% supply
-    let userRp    = 1_000_000_000;          // Saldo awal 1 miliar Rp
-    let poolLNX   = totalSupply - userLNX;  // Pool = 5.000.000 LNX
-    let initialPrice = 100;                 // Rp per LNX
-    let poolRp    = poolLNX * initialPrice; // Pool Rp = 500.000.000
-    let price     = initialPrice;
+    let userLNX = totalSupply * 0.5, userRp = 1_000_000_000;
+    let poolLNX = totalSupply - userLNX, initialPrice = 100;
+    let poolRp = poolLNX * initialPrice, price = initialPrice;
 
-    // Daftar nama fake traders
-    const fakeNames = [
-      'Alice','Bob','Charlie','Doni','Siti',
-      'Andi','Rina','Budi','Wati','Chandra'
-    ];
+    const fakeNames = ['Alice','Bob','Charlie','Doni','Siti','Andi','Rina','Budi','Wati','Chandra'];
 
     // Setup Chart.js
     const ctx = document.getElementById('priceChart').getContext('2d');
-    const chartData = {
-      labels: Array(30).fill(''),
-      datasets: [{
-        label: 'Harga LNX (Rp)',
-        data: Array(30).fill(price),
-        borderColor: '#0cffb3',
-        tension: 0.3,
-        pointRadius: 0
-      }]
-    };
-    const priceChart = new Chart(ctx, {
-      type: 'line',
-      data: chartData,
-      options: {
-        animation: false,
-        scales: {
-          x: { display: false },
-          y: { ticks: { color: '#0cffb3' } }
-        }
-      }
-    });
+    const chartData = { labels: Array(30).fill(''), datasets: [{ label: 'Harga LNX (Rp)', data: Array(30).fill(price), borderColor: '#0cffb3', tension: 0.3, pointRadius: 0 }]};
+    const priceChart = new Chart(ctx, { type: 'line', data: chartData, options: { animation: false, scales: { x: { display: false }, y: { ticks: { color: '#0cffb3' } } } } });
 
-    // Format Rupiah
-    function fmtRp(x) {
-      return 'Rp' + x.toLocaleString('id-ID', {minimumFractionDigits: 2});
-    }
-
-    // Render ke UI
+    function fmtRp(x) { return 'Rp' + x.toLocaleString('id-ID', {minimumFractionDigits: 2}); }
     function render() {
       price = poolRp / poolLNX;
-      document.getElementById('priceDisplay').innerText =
-        `Harga LNX: ${fmtRp(price)}`;
-      document.getElementById('poolInfo').innerText =
-        `Pool → ${fmtRp(poolRp)} / ${poolLNX.toLocaleString()} LNX`;
-      document.getElementById('userInfo').innerText =
-        `Lu → ${fmtRp(userRp)} / ${userLNX.toLocaleString()} LNX`;
+      document.getElementById('priceDisplay').innerText = `Harga LNX: ${fmtRp(price)}`;
+      document.getElementById('poolInfo').innerText    = `Pool → ${fmtRp(poolRp)} / ${poolLNX.toLocaleString()} LNX`;
+      document.getElementById('userInfo').innerText    = `Lu → ${fmtRp(userRp)} / ${userLNX.toLocaleString()} LNX`;
       // update chart
       priceChart.data.datasets[0].data.push(price);
       priceChart.data.datasets[0].data.shift();
       priceChart.update();
     }
 
-    // Simulasi fake market noise + fake order info
     function marketNoise() {
-      const noise = (Math.random() - 0.5) * 0.002; // ±0.2%
-      const delta = poolRp * noise;
-      let action, name, amtLNX, amtRp;
-      
-      name = fakeNames[Math.floor(Math.random()*fakeNames.length)];
-      if (delta > 0 && poolLNX > 0) {
-        // fake buy: poolRp naik, poolLNX turun
-        amtRp = delta;
-        amtLNX = delta / price;
-        poolRp += amtRp;
-        poolLNX -= amtLNX;
-        action = 'BUY';
+      // noise ±1%
+      const noisePct = (Math.random() - 0.5) * 0.02;
+      const deltaRp = poolRp * noisePct;
+      let action = noisePct>0 ? 'BUY':'SELL',
+          name = fakeNames[Math.floor(Math.random()*fakeNames.length)],
+          amtRp = Math.abs(deltaRp),
+          amtLNX = amtRp / price;
+
+      if (action==='BUY' && poolLNX>=amtLNX) {
+        poolRp += amtRp; poolLNX -= amtLNX;
       } else {
-        // fake sell
-        amtRp = -delta;
-        amtLNX = amtRp / price;
-        poolRp -= amtRp;
-        poolLNX += amtLNX;
-        action = 'SELL';
+        poolRp -= amtRp; poolLNX += amtLNX;
       }
-      // Tampilkan informasi fake order
-      document.getElementById('fakeOrder').innerText =
-        `Fake Order: ${name} ${action} ${amtLNX.toFixed(2)} LNX`;
+      document.getElementById('fakeOrder').innerText = `Fake Order: ${name} ${action} ${amtLNX.toFixed(0)} LNX`;
     }
 
-    // Aksi user BUY
     function buyLNX() {
       const amt = parseFloat(document.getElementById('buyInput').value);
-      if (!amt || amt <= 0) return alert('Masukkan jumlah beli valid!');
+      if (!amt||amt<=0) return alert('Jumlah beli invalid!');
       const cost = amt * price;
-      if (userRp < cost || poolLNX < amt) {
-        return alert('Saldo / pool tidak mencukupi!');
-      }
+      if (userRp<cost||poolLNX<amt) return alert('Saldo/pool kurang!');
+      // impact besar: 0.5% per 1% supply
+      const impact = (amt/totalSupply)*5; 
       userRp -= cost; poolRp += cost;
       userLNX += amt; poolLNX -= amt;
+      poolRp += poolRp*impact; poolLNX -= (poolRp*impact)/price;
       render();
     }
 
-    // Aksi user SELL
     function sellLNX() {
       const amt = parseFloat(document.getElementById('sellInput').value);
-      if (!amt || amt <= 0) return alert('Masukkan jumlah jual valid!');
-      if (userLNX < amt) return alert('Token lu tidak cukup!');
+      if (!amt||amt<=0) return alert('Jumlah jual invalid!');
+      if (userLNX<amt) return alert('Token kurang!');
       const gain = amt * price;
-      userRp += gain; poolRp -= gain;
+      const impact = (amt/totalSupply)*5;
       userLNX -= amt; poolLNX += amt;
+      userRp += gain; poolRp -= gain;
+      poolRp -= poolRp*impact; poolLNX += (poolRp*impact)/price;
       render();
     }
 
-    // Loop update setiap 1 detik
-    setInterval(() => {
-      marketNoise();
-      render();
-    }, 1000);
-
-    // Inisialisasi
+    // Loop update tiap detik
+    setInterval(() => { marketNoise(); render(); }, 1000);
     render();
   </script>
 </body>
