@@ -1,109 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <meta charset="utf-8">
-  <title>LNX Realistic Simulator v2 (Rp)</title>
+  <title>LNX Pro Exchange Simulator</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { background: #0a0a0a; color: #0cffb3; font-family: monospace; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    h1 { color: #fff; }
-    #container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    #chartPanel, #controlPanel { background: #101010; padding: 20px; border-radius: 8px; }
-    #chartPanel { width: 600px; }
-    #controlPanel { width: 320px; }
-    .stat { margin: 8px 0; }
-    input { width: 120px; padding: 5px; margin-right: 5px; }
-    button { padding: 8px 16px; margin: 5px 0; background: #0cffb3; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; }
-    button:hover { background: #0aaa82; }
-    #fakeOrder { margin-top: 12px; font-size: 14px; color: #ffcc00; }
+    /* Reset & Font */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 30px; }
+    h1 { margin-bottom: 20px; }
+    a { color: #1e88e5; text-decoration: none; }
+
+    /* Container */
+    #container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; width: 100%; max-width: 1200px; }
+
+    /* Chart Panel */
+    #chartPanel {
+      background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      flex: 2 1 600px;
+    }
+    #chartPanel canvas { width: 100% !important; height: auto !important; }
+
+    /* Control Panel */
+    #controlPanel {
+      background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      flex: 1 1 300px;
+    }
+    .stat { margin: 12px 0; font-size: 16px; }
+    .stat span { font-weight: bold; color: #90caf9; }
+    #fakeOrder { color: #ffb74d; height: 1.5em; }
+
+    /* Form */
+    .trade-box { display: flex; align-items: center; margin: 12px 0; }
+    .trade-box input {
+      flex: 1; padding: 8px; border: 1px solid #333; border-radius: 4px; margin-right: 8px;
+      background: #121212; color: #e0e0e0; font-size: 14px;
+    }
+    .trade-box button {
+      padding: 8px 16px; border: none; border-radius: 4px; background: #42a5f5; color: #fff;
+      font-weight: bold; cursor: pointer; transition: background .2s;
+    }
+    .trade-box button:hover { background: #1e88e5; }
+
+    /* Footer */
+    footer { margin-top: 30px; font-size: 12px; color: #777; }
   </style>
 </head>
 <body>
-  <h1>🪙 LNX Simulator v2 (Rp)</h1>
+  <h1>🪙 LNX Pro Exchange Simulator</h1>
   <div id="container">
-    <div id="chartPanel"><canvas id="priceChart"></canvas></div>
+    <!-- Grafik Harga -->
+    <div id="chartPanel">
+      <canvas id="priceChart"></canvas>
+    </div>
+
+    <!-- Panel Kontrol -->
     <div id="controlPanel">
-      <div class="stat" id="priceDisplay">Harga LNX: </div>
-      <div class="stat" id="poolInfo">Pool: </div>
-      <div class="stat" id="userInfo">Lu: </div>
-      <div id="fakeOrder" class="stat">Fake Order: </div>
-      <hr>
-      <div class="stat">
-        <input type="number" id="buyInput" placeholder="LNX mau beli">
+      <div class="stat">Harga LNX: <span id="priceDisplay"></span></div>
+      <div class="stat">Pool: <span id="poolInfo"></span></div>
+      <div class="stat">Saldo Lu: <span id="userInfo"></span></div>
+      <div class="stat" id="fakeOrder">Fake Order: —</div>
+      <hr style="border-color: #333; margin: 16px 0;">
+      <div class="trade-box">
+        <input type="number" id="buyInput" placeholder="Masukkan LNX beli">
         <button onclick="buyLNX()">BUY</button>
       </div>
-      <div class="stat">
-        <input type="number" id="sellInput" placeholder="LNX mau jual">
+      <div class="trade-box">
+        <input type="number" id="sellInput" placeholder="Masukkan LNX jual">
         <button onclick="sellLNX()">SELL</button>
       </div>
     </div>
   </div>
 
+  <footer>
+    Simulasi AMM sederhana: harga = poolRp / poolLNX • supply max 10jt • by Lionor AI Beta
+  </footer>
+
   <script>
-    // --- Inisialisasi ---
+    // --- Parameter Awal ---
     const totalSupply = 10_000_000;
-    let userLNX = totalSupply * 0.5, userRp = 1_000_000_000;
-    let poolLNX = totalSupply - userLNX, initialPrice = 100;
-    let poolRp = poolLNX * initialPrice, price = initialPrice;
+    let userLNX = totalSupply * 0.5,
+        userRp  = 1_000_000_000,
+        poolLNX = totalSupply - userLNX,
+        initialPrice = 100,
+        poolRp  = poolLNX * initialPrice,
+        price   = initialPrice;
 
     const fakeNames = ['Alice','Bob','Charlie','Doni','Siti','Andi','Rina','Budi','Wati','Chandra'];
 
-    // Setup Chart.js
+    // Chart.js init
     const ctx = document.getElementById('priceChart').getContext('2d');
-    const chartData = { labels: Array(30).fill(''), datasets: [{ label: 'Harga LNX (Rp)', data: Array(30).fill(price), borderColor: '#0cffb3', tension: 0.3, pointRadius: 0 }]};
-    const priceChart = new Chart(ctx, { type: 'line', data: chartData, options: { animation: false, scales: { x: { display: false }, y: { ticks: { color: '#0cffb3' } } } } });
+    const chartData = {
+      labels: Array(30).fill(''),
+      datasets: [{ label: 'Harga LNX (Rp)', data: Array(30).fill(price), borderColor: '#42a5f5', tension: 0.3, pointRadius: 0 }]
+    };
+    const priceChart = new Chart(ctx, { type: 'line', data: chartData, options: { animation: false, scales: { x: { display: false }, y: { ticks: { color: '#90caf9' } } } } });
 
-    function fmtRp(x) { return 'Rp' + x.toLocaleString('id-ID', {minimumFractionDigits: 2}); }
+    // Formatter
+    function fmtRp(x) { return 'Rp' + x.toLocaleString('id-ID', { minimumFractionDigits: 2 }); }
+
+    // Render UI
     function render() {
       price = poolRp / poolLNX;
-      document.getElementById('priceDisplay').innerText = `Harga LNX: ${fmtRp(price)}`;
-      document.getElementById('poolInfo').innerText    = `Pool → ${fmtRp(poolRp)} / ${poolLNX.toLocaleString()} LNX`;
-      document.getElementById('userInfo').innerText    = `Lu → ${fmtRp(userRp)} / ${userLNX.toLocaleString()} LNX`;
-      // update chart
+      document.getElementById('priceDisplay').innerText = fmtRp(price);
+      document.getElementById('poolInfo').innerText     = `${poolLNX.toLocaleString()} LNX / ${fmtRp(poolRp)}`;
+      document.getElementById('userInfo').innerText     = `${userLNX.toLocaleString()} LNX / ${fmtRp(userRp)}`;
+      // Clamp values
+      userLNX = Math.min(Math.max(userLNX, 0), totalSupply);
+      poolLNX = Math.min(Math.max(poolLNX, 0), totalSupply);
+      // Update chart
       priceChart.data.datasets[0].data.push(price);
       priceChart.data.datasets[0].data.shift();
       priceChart.update();
     }
 
+    // Market noise + fake order
     function marketNoise() {
-      // noise ±1%
-      const noisePct = (Math.random() - 0.5) * 0.02;
+      const noisePct = (Math.random() - 0.5) * 0.02; // ±1%
       const deltaRp = poolRp * noisePct;
-      let action = noisePct>0 ? 'BUY':'SELL',
-          name = fakeNames[Math.floor(Math.random()*fakeNames.length)],
-          amtRp = Math.abs(deltaRp),
+      let action = noisePct > 0 ? 'BUY' : 'SELL';
+      let name   = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+      let amtRp  = Math.abs(deltaRp),
           amtLNX = amtRp / price;
 
-      if (action==='BUY' && poolLNX>=amtLNX) {
+      if (action === 'BUY' && poolLNX >= amtLNX) {
         poolRp += amtRp; poolLNX -= amtLNX;
-      } else {
+      } else if (action === 'SELL') {
         poolRp -= amtRp; poolLNX += amtLNX;
       }
-      document.getElementById('fakeOrder').innerText = `Fake Order: ${name} ${action} ${amtLNX.toFixed(0)} LNX`;
+
+      document.getElementById('fakeOrder').innerText =
+        `Fake Order: ${name} ${action} ${amtLNX.toFixed(0)} LNX`;
     }
 
+    // Aksi user: buy
     function buyLNX() {
       const amt = parseFloat(document.getElementById('buyInput').value);
-      if (!amt||amt<=0) return alert('Jumlah beli invalid!');
+      if (!amt || amt <= 0) return alert('Jumlah beli tidak valid!');
+      if (poolLNX < amt) return alert('Supply LNX tidak cukup!');
       const cost = amt * price;
-      if (userRp<cost||poolLNX<amt) return alert('Saldo/pool kurang!');
-      // impact besar: 0.5% per 1% supply
-      const impact = (amt/totalSupply)*5; 
+      if (userRp < cost) return alert('Saldo Rp tidak cukup!');
+      // Execute trade
       userRp -= cost; poolRp += cost;
       userLNX += amt; poolLNX -= amt;
-      poolRp += poolRp*impact; poolLNX -= (poolRp*impact)/price;
       render();
     }
 
+    // Aksi user: sell
     function sellLNX() {
       const amt = parseFloat(document.getElementById('sellInput').value);
-      if (!amt||amt<=0) return alert('Jumlah jual invalid!');
-      if (userLNX<amt) return alert('Token kurang!');
+      if (!amt || amt <= 0) return alert('Jumlah jual tidak valid!');
+      if (userLNX < amt) return alert('Token LNX tidak cukup!');
       const gain = amt * price;
-      const impact = (amt/totalSupply)*5;
-      userLNX -= amt; poolLNX += amt;
       userRp += gain; poolRp -= gain;
-      poolRp -= poolRp*impact; poolLNX += (poolRp*impact)/price;
+      userLNX -= amt; poolLNX += amt;
       render();
     }
 
