@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LNX Exchange Simulator PRO</title>
+  <title>LNX Exchange Simulator DYNAMIC</title>
   <style>
     body {
       background-color: #0f0f0f;
@@ -62,9 +62,9 @@
   <script>
     const totalSupply = 1000000;
     let userTokens = 500000;
-    let userRupiah = 100000000; // 100 juta saldo awal
+    let userRupiah = 100000000;
     let price = 100;
-    let marketCap = price * totalSupply;
+    let marketCap = totalSupply * price;
     let volume = 5000;
 
     function formatRupiah(angka) {
@@ -72,8 +72,10 @@
     }
 
     function updateMarket() {
-      const change = price * ((Math.random() - 0.5) / 100); // naik turun ±0.5%
-      price = Math.max(10, price + change);
+      // Random market movement simulasi fake traders
+      const randomChange = price * ((Math.random() - 0.5) / 100);
+      price = Math.max(10, price + randomChange);
+
       marketCap = price * totalSupply;
 
       document.getElementById("price").innerText = "Harga LNX: " + formatRupiah(price);
@@ -90,10 +92,16 @@
 
       const cost = input * price;
       const availableToken = totalSupply - userTokens;
+
       if (userRupiah >= cost && input <= availableToken) {
         userTokens += input;
         userRupiah -= cost;
         volume += cost;
+
+        // Harga naik dikit karena ada pembeli
+        const pump = price * (input / totalSupply) * 0.5;
+        price += pump;
+
         updateMarket();
       } else {
         alert("Gagal beli: saldo tidak cukup atau supply habis.");
@@ -109,6 +117,11 @@
         userTokens -= input;
         userRupiah += gain;
         volume += gain;
+
+        // Harga turun dikit karena ada penjual
+        const dump = price * (input / totalSupply) * 0.5;
+        price = Math.max(10, price - dump);
+
         updateMarket();
       } else {
         alert("Token lu gak cukup buat jual segitu.");
