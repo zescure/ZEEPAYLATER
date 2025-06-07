@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simulasi Market Token LNX</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #0f0;
+      font-family: monospace;
+      padding: 20px;
+    }
+    h1 { color: #f0f; }
+    .value { font-size: 22px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>📈 LNX Market Simulator</h1>
+  <div class="value" id="price">Harga LNX: </div>
+  <div class="value" id="marketCap">Market Cap: </div>
+  <div class="value" id="volume">Volume 24h: </div>
+  <div class="value" id="yourHoldings">Token Lu (50%): </div>
+  <div class="value" id="yourValue">Cuan Lu: </div>
+
+  <script>
+    const totalSupply = 1000000; // total supply
+    const yourToken = totalSupply * 0.5; // lu pegang 50%
+    let price = 0.1; // harga awal
+    let marketCap = price * totalSupply;
+    let volume = 0;
+
+    function formatRupiah(angka) {
+      return 'Rp' + angka.toLocaleString('id-ID', {minimumFractionDigits: 2});
+    }
+
+    function updateMarket() {
+      // Harga naik turun acak
+      const randomChange = (Math.random() - 0.5) * 10;
+      price = Math.max(0.1, price + randomChange); // biar gak nol
+      marketCap = price * totalSupply;
+
+      // Volume transaksi acak
+      const fakeVolume = Math.floor(Math.random() * 50000);
+      volume = fakeVolume;
+
+      // Update HTML
+      document.getElementById("price").innerText = "Harga LNX: " + formatRupiah(price);
+      document.getElementById("marketCap").innerText = "Market Cap: " + formatRupiah(marketCap);
+      document.getElementById("volume").innerText = "Volume 24h: " + formatRupiah(volume);
+      document.getElementById("yourHoldings").innerText = "Token Lu: " + yourToken.toLocaleString() + " LNX";
+      document.getElementById("yourValue").innerText = "Cuan Lu (kalau dijual): " + formatRupiah(yourToken * price);
+    }
+
+    setInterval(updateMarket, 1000); // update setiap detik
+    updateMarket(); // pertama kali langsung tampil
+  </script>
+</body>
+</html>
