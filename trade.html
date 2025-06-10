@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trading Dashboard</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; color: #333; }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    h1 { text-align: center; margin-bottom: 24px; }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .btn {
+      flex: 1;
+      margin: 0 8px;
+      padding: 12px 0;
+      background: #0069d9;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .3s;
+    }
+    .btn:hover { background: #0053a6; }
+    .btn.active { background: #004085; }
+
+    .section {
+      display: none;
+      padding: 16px 0;
+      border-top: 1px solid #e0e0e0;
+    }
+    .section.active { display: block; }
+
+    .card {
+      background: #fafbfc;
+      border: 1px solid #e3e6ea;
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .card h3 { margin-bottom: 8px; }
+    .card p { margin-bottom: 12px; line-height: 1.5; }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .action-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px;
+      background: #28a745;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .3s;
+    }
+    .action-btn:hover { background: #1e7e34; }
+
+    .deposit-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .deposit-group input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .deposit-group button {
+      padding: 8px 12px;
+      background: #ffc107;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background .3s;
+    }
+    .deposit-group button:hover { background: #e0a800; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Trading Dashboard</h1>
+
+  <div class="btn-group">
+    <div class="btn active" data-target="spread">Call/Put Spread</div>
+    <div class="btn" data-target="knockout">Knock‑Out Options</div>
+    <div class="btn" data-target="stocks">Stock Options</div>
+  </div>
+
+  <!-- Call/Put Spread Section -->
+  <div id="spread" class="section active">
+    <div class="card">
+      <h3>Call/Put Spread</h3>
+      <p>Strategi beli &amp; jual opsi bersamaan untuk membatasi risiko dan memaksimalkan potensi keuntungan di range tertentu.</p>
+      <canvas id="chart-spread" height="120"></canvas>
+      <div class="actions">
+        <div class="action-btn" onclick="alert('Masuk ke halaman trading Call/Put Spread')">Trade Spread</div>
+      </div>
+      <div class="deposit-group">
+        <input type="number" id="deposit-spread" placeholder="Masukkan jumlah (Rp)">
+        <button onclick="deposit('spread')">Deposit Rp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Knock‑Out Options Section -->
+  <div id="knockout" class="section">
+    <div class="card">
+      <h3>Knock‑Out Options</h3>
+      <p>Opsi dengan proteksi otomatis. Posisi akan tertutup jika harga menyentuh level KO, menjaga kerugian tetap terkendali.</p>
+      <canvas id="chart-knockout" height="120"></canvas>
+      <div class="actions">
+        <div class="action-btn" onclick="alert('Masuk ke halaman trading Knock‑Out Options')">Trade KO</div>
+      </div>
+      <div class="deposit-group">
+        <input type="number" id="deposit-knockout" placeholder="Masukkan jumlah (Rp)">
+        <button onclick="deposit('knockout')">Deposit Rp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Options Section -->
+  <div id="stocks" class="section">
+    <div class="card">
+      <h3>Stock Options</h3>
+      <p>Hak beli atau jual saham pada harga tertentu sebelum expiry, cocok untuk hedging atau spekulasi jangka menengah.</p>
+      <canvas id="chart-stocks" height="120"></canvas>
+      <div class="actions">
+        <div class="action-btn" onclick="alert('Masuk ke halaman trading Stock Options')">Trade Stock Opt</div>
+      </div>
+      <div class="deposit-group">
+        <input type="number" id="deposit-stocks" placeholder="Masukkan jumlah (Rp)">
+        <button onclick="deposit('stocks')">Deposit Rp</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Section toggle
+  const buttons = document.querySelectorAll('.btn');
+  const sections = document.querySelectorAll('.section');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+    });
+  });
+
+  // Deposit handler
+  function deposit(section) {
+    const amt = document.getElementById('deposit-' + section).value;
+    if (!amt || amt <= 0) {
+      return alert('Masukkan jumlah deposit yang valid!');
+    }
+    alert('Deposit Rp ' + parseInt(amt).toLocaleString('id-ID') + ' berhasil untuk ' + section);
+  }
+
+  // Dummy data for charts
+  const labels = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00'];
+  const dataSpread = [100, 102, 101, 103, 105, 104, 106];
+  const dataKO     = [1.07, 1.072, 1.071, 1.073, 1.074, 1.072, 1.075];
+  const dataStocks = [50, 52, 51, 53, 54, 55, 56];
+
+  // Init charts
+  function initChart(ctxId, data, label) {
+    const ctx = document.getElementById(ctxId).getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          fill: false,
+          borderWidth: 2,
+          tension: 0.2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { display: true },
+          y: { display: true }
+        }
+      }
+    });
+  }
+
+  initChart('chart-spread',   dataSpread,   'Spread Price');
+  initChart('chart-knockout', dataKO,       'KO Level');
+  initChart('chart-stocks',   dataStocks,   'Stock Price');
+</script>
+
+</body>
+</html>
