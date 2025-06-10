@@ -1,82 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Pro Trading Simulator v2</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * { box-sizing: border-box; margin:0; padding:0; font-family:Arial,sans-serif }
-    body { background:#f4f6f9; color:#333 }
-    .container { max-width:1200px; margin:20px auto; padding:0 16px }
-    header { text-align:center; margin-bottom:16px }
-    header h1 { font-size:1.8em }
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pro Trading Simulator v3</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+  body{background:#f4f6f9;color:#333}
+  .container{max-width:1200px;margin:20px auto;padding:0 16px}
+  header{text-align:center;margin-bottom:16px}
+  header h1{font-size:1.8em}
 
-    /* Deposit & balance */
-    .wallet { display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom:24px }
-    .wallet input { padding:8px; width:200px; border:1px solid #ccc; border-radius:4px }
-    .wallet button { padding:8px 16px; border:none; background:#ffc107; border-radius:4px; cursor:pointer; transition:.2s }
-    .wallet button:hover { background:#e0a800 }
-    .balance { font-size:1.2em }
+  /* Wallet */
+  .wallet{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:24px}
+  .wallet input{padding:8px;width:200px;border:1px solid #ccc;border-radius:4px}
+  .wallet button{padding:8px 16px;border:none;background:#ffc107;border-radius:4px;cursor:pointer;transition:.2s}
+  .wallet button:hover{background:#e0a800}
+  .balance{font-size:1.2em}
 
-    /* Product toggle */
-    .prod-toggle { display:flex; justify-content:center; gap:10px; margin-bottom:20px }
-    .prod-toggle button {
-      padding:10px 20px; border:none; border-radius:4px;
-      background:#2d7efc; color:#fff; cursor:pointer; transition:.2s;
-    }
-    .prod-toggle button.active { background:#1a5ed8 }
+  /* Produk toggle */
+  .prod-toggle{display:flex;justify-content:center;gap:10px;margin-bottom:20px}
+  .prod-toggle button{padding:10px 20px;border:none;border-radius:4px;background:#2d7efc;color:#fff;cursor:pointer;transition:.2s}
+  .prod-toggle button.active{background:#1a5ed8}
 
-    /* Grid layout */
-    .main-grid { display:grid; grid-template-columns:2fr 1fr; gap:20px }
-    .panel { background:#fff; border-radius:6px; padding:16px; }
+  /* Layout */
+  .main-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+  .panel{background:#fff;border-radius:6px;padding:16px}
 
-    /* Chart area */
-    .chart-container { position:relative; height:350px }
-    .indicators { margin-top:8px; font-size:.9em; color:#666 }
+  /* Chart */
+  .chart-container{position:relative;height:350px}
+  .indicators{margin-top:8px;font-size:.9em;color:#666}
 
-    /* Order book & feed */
-    .order-book, .trade-feed { margin-top:20px }
-    table { width:100%; border-collapse:collapse; font-size:.9em }
-    th, td { padding:6px; border-bottom:1px solid #eee; text-align:right }
-    th { background:#fafafa }
-    .bid { color:#28a745 } .ask { color:#dc3545 }
-    .buy { color:#28a745 } .sell { color:#dc3545 }
+  /* Tables */
+  table{width:100%;border-collapse:collapse;font-size:.9em}
+  th,td{padding:6px;border-bottom:1px solid #eee;text-align:right}
+  th{background:#fafafa}
+  .bid{color:#28a745}.ask{color:#dc3545}
+  .buy{color:#28a745}.sell{color:#dc3545}
 
-    /* Order form & tabs */
-    .order-form { display:flex; gap:8px; margin-bottom:16px }
-    .order-form select, .order-form input { padding:8px; border:1px solid #ccc; border-radius:4px; flex:1 }
-    .order-form button { padding:8px; border:none; border-radius:4px; color:#fff; cursor:pointer; transition:.2s }
-    .buy-btn { background:#28a745 } .buy-btn:hover { background:#218838 }
-    .sell-btn { background:#dc3545 } .sell-btn:hover { background:#a71d2a }
+  /* Order form & tabs */
+  .order-form{display:flex;gap:8px;margin-bottom:16px}
+  .order-form select,.order-form input{padding:8px;border:1px solid #ccc;border-radius:4px;flex:1}
+  .order-form button{padding:8px;border:none;border-radius:4px;color:#fff;cursor:pointer;transition:.2s}
+  .buy-btn{background:#28a745}.buy-btn:hover{background:#218838}
+  .sell-btn{background:#dc3545}.sell-btn:hover{background:#a71d2a}
 
-    .tabs { display:flex; gap:10px; margin-bottom:0 }
-    .tabs button {
-      flex:1; padding:8px; border:none; background:#f0f2f5; cursor:pointer; border-radius:4px 4px 0 0;
-    }
-    .tabs button.active { background:#fff; border-bottom:2px solid #2d7efc }
-    .tab-content { border:1px solid #ddd; border-top:none; padding:10px; background:#fff; height:250px; overflow:auto }
-    .tab-content table { width:100%; }
+  .tabs{display:flex;gap:10px;margin-bottom:0}
+  .tabs button{flex:1;padding:8px;border:none;background:#f0f2f5;cursor:pointer;border-radius:4px 4px 0 0}
+  .tabs button.active{background:#fff;border-bottom:2px solid #2d7efc}
+  .tab-content{border:1px solid #ddd;border-top:none;padding:10px;background:#fff;height:250px;overflow:auto}
+  .tab-content table{width:100%}
 
-    /* Info buttons & sections */
-    .info-buttons { display:flex; justify-content:center; gap:12px; margin:24px 0 }
-    .info-buttons button {
-      padding:10px 16px; border:none; background:#6c757d; color:#fff; border-radius:4px; cursor:pointer;
-      transition:.2s
-    }
-    .info-buttons button:hover { background:#5a6268 }
-    .info-buttons button.active { background:#495057 }
-    .info-section { display:none; background:#fff; border-radius:6px; padding:16px; margin-bottom:24px; }
-    .info-section.active { display:block }
-    .info-section h3 { margin-bottom:8px }
-    .info-section ul { margin-left:20px; margin-bottom:12px }
-  </style>
+  /* Info */
+  .info-buttons{display:flex;justify-content:center;gap:12px;margin:24px 0}
+  .info-buttons button{padding:10px 16px;border:none;background:#6c757d;color:#fff;border-radius:4px;cursor:pointer;transition:.2s}
+  .info-buttons button:hover{background:#5a6268}
+  .info-buttons button.active{background:#495057}
+  .info-section{display:none;background:#fff;border-radius:6px;padding:16px;margin-bottom:24px}
+  .info-section.active{display:block}
+  .info-section h3{margin-bottom:8px}
+  .info-section ul{margin-left:20px;margin-bottom:12px}
+</style>
 </head>
 <body>
 
 <div class="container">
-  <header><h1>Pro Trading Simulator v2</h1></header>
+  <header><h1>Pro Trading Simulator v3</h1></header>
 
-  <!-- Deposit & Balance -->
+  <!-- Wallet -->
   <div class="wallet">
     <div class="balance">Saldo: <span id="balance">Rp 0</span></div>
     <input type="number" id="depositAmt" placeholder="Deposit (Rp)"/>
@@ -90,20 +81,20 @@
     <button data-prod="stocks">Stock Options</button>
   </div>
 
-  <!-- Main Grid -->
+  <!-- Main area -->
   <div class="main-grid">
-    <!-- Left: Chart + Order Book + Feed -->
+    <!-- Left: chart + book + feed -->
     <div class="panel">
       <div class="chart-container"><canvas id="chart"></canvas></div>
       <div class="indicators">MA(10), MA(30)</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-        <div class="order-book">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px">
+        <div>
           <h4>Order Book</h4>
           <table id="orderBook"><thead>
             <tr><th class="bid">Bid Qty</th><th class="bid">Bid Price</th><th class="ask">Ask Price</th><th class="ask">Ask Qty</th></tr>
           </thead><tbody></tbody></table>
         </div>
-        <div class="trade-feed">
+        <div>
           <h4>Trade Feed</h4>
           <table id="feedTable"><thead>
             <tr><th>Time</th><th>Side</th><th>Price</th><th>Qty</th></tr>
@@ -112,7 +103,7 @@
       </div>
     </div>
 
-    <!-- Right: Order Form + Open Orders/History -->
+    <!-- Right: order form & tables -->
     <div class="panel">
       <h4>New Order (<span id="prodName">Spread</span>)</h4>
       <div class="order-form">
@@ -126,104 +117,82 @@
         <button data-tab="history">Trade History</button>
       </div>
       <div id="open" class="tab-content">
-        <table class="order-list"><thead><tr><th>Side</th><th>Price</th><th>Qty</th><th>Action</th></tr></thead><tbody></tbody></table>
+        <table class="order-list"><thead>
+          <tr><th>Side</th><th>Price</th><th>Qty</th><th>PnL</th><th>Action</th></tr>
+        </thead><tbody></tbody></table>
       </div>
       <div id="history" class="tab-content" style="display:none">
-        <table class="history-list"><thead><tr><th>Time</th><th>Prod</th><th>Side</th><th>Price</th><th>Qty</th></tr></thead><tbody></tbody></table>
+        <table class="history-list"><thead>
+          <tr><th>Time</th><th>Prod</th><th>Side</th><th>Price</th><th>Qty</th><th>PnL</th></tr>
+        </thead><tbody></tbody></table>
       </div>
     </div>
   </div>
 
-  <!-- Info Buttons -->
+  <!-- Info -->
   <div class="info-buttons">
     <button data-info="about">Tentang Produk</button>
     <button data-info="howto">Tatacara Trading</button>
   </div>
-  <!-- Info Sections -->
   <div id="about" class="info-section">
     <h3>Tentang Ketiga Produk</h3>
     <ul>
-      <li><strong>Call/Put Spread:</strong> Beli satu call/put dan jual call/put lain pada strike berbeda. Risiko & reward sudah terbatas.</li>
-      <li><strong>Knock‑Out Options:</strong> Opsi dengan level KO. Jika harga menyentuh KO, posisi otomatis tertutup (rugi penuh).</li>
-      <li><strong>Stock Options:</strong> Hak beli/jual saham pada strike & expiry tertentu. Cocok hedging atau spekulasi jangka menengah.</li>
+      <li><strong>Spread:</strong> risiko & reward terbatas di selisih harga. Profit linear dengan perubahan harga antara strike.</li>
+      <li><strong>KO:</strong> jika harga menyentuh KO level (entry±threshold) → posisi otomatis close rugi full, else profit linear.</li>
+      <li><strong>Stock Opt:</strong> profit/loss mengikuti % perubahan harga underlying.</li>
     </ul>
   </div>
   <div id="howto" class="info-section">
     <h3>Tatacara Melakukan Trading</h3>
-    <h4>1. Deposit Saldo</h4>
     <ul>
-      <li>Masukkan jumlah Rupiah di kolom Deposit, klik “Deposit”.</li>
-      <li>Saldo akan bertambah dan tampil di sebelah kiri.</li>
-    </ul>
-    <h4>2. Pilih Produk</h4>
-    <ul>
-      <li>Klik tombol produk (Spread/KO/Stock) di atas dashboard.</li>
-      <li>Chart, order book, dan feed akan menyesuaikan.</li>
-    </ul>
-    <h4>3. Buat Order</h4>
-    <ul>
-      <li>Pilih “Buy” atau “Sell”, masukkan harga & qty, klik “Place”.</li>
-      <li>Order akan tampil di tab “Open Orders”.</li>
-    </ul>
-    <h4>4. Order Matching</h4>
-    <ul>
-      <li>Setiap 5 detik sistem akan mengisi satu order terbuka secara acak.</li>
-      <li>Order ter-fill akan pindah ke “Trade History”.</li>
-    </ul>
-    <h4>5. Analisis & Indikator</h4>
-    <ul>
-      <li>Gunakan Moving Average (MA10 & MA30) di chart untuk menentukan tren.</li>
-      <li>Amati order book dan trade feed untuk melihat supply/demand.</li>
-    </ul>
-    <h4>6. Manajemen Risiko</h4>
-    <ul>
-      <li>Untuk Spread, risiko & reward sudah fixed sejak order dibuat.</li>
-      <li>Untuk KO, tentukan KO level (harga pada strike price otomatis KO).</li>
-      <li>Untuk Stock Options, perhatikan expiry & implied volatility.</li>
+      <li>Deposit, pilih produk, masukkan side/price/qty, klik Place.</li>
+      <li>Open orders muncul di tab Open Orders dengan unrealized PnL.</li>
+      <li>Sistem mengecek setiap detik—jika random &lt; probabilitas fill based on distance to market price, order ter‐fill.</li>
+      <li>Order ter‐fill dipindah ke Trade History dengan realized PnL, saldo otomatis ter‐update.</li>
     </ul>
   </div>
 </div>
 
 <script>
   // State
-  let balance = 0, product = 'spread', openOrders = [], history = [], chart;
+  let balance=0, product='spread', openOrders=[], history=[], chart;
 
-  // Utilities
-  function fmt(x){ return 'Rp ' + x.toLocaleString('id-ID') }
-  function updateBal(){ document.getElementById('balance').textContent = fmt(balance) }
+  // Utils
+  const fmtR=(x)=>'Rp '+x.toLocaleString('id-ID');
+  function updateBal(){ document.getElementById('balance').textContent=fmtR(balance); }
 
   // Deposit
   function makeDeposit(){
-    const v = parseInt(document.getElementById('depositAmt').value);
+    let v=parseInt(document.getElementById('depositAmt').value);
     if(!v||v<=0) return alert('Masukkan jumlah valid!');
-    balance += v; updateBal();
-    document.getElementById('depositAmt').value = '';
+    balance+=v; updateBal();
+    document.getElementById('depositAmt').value='';
   }
 
   // Product toggle
   document.querySelectorAll('.prod-toggle button').forEach(b=>{
-    b.onclick = ()=>{
+    b.onclick=()=>{
       document.querySelectorAll('.prod-toggle button').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
-      product = b.dataset.prod;
-      document.getElementById('prodName').textContent = b.textContent;
+      product=b.dataset.prod;
+      document.getElementById('prodName').textContent=b.textContent;
       resetChart();
     };
   });
 
   // Tabs
   document.querySelectorAll('.tabs button').forEach(b=>{
-    b.onclick = ()=>{
+    b.onclick=()=>{
       document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
       document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
-      document.getElementById(b.dataset.tab).style.display = 'block';
+      document.getElementById(b.dataset.tab).style.display='block';
     };
   });
 
-  // Info toggles
+  // Info buttons
   document.querySelectorAll('.info-buttons button').forEach(b=>{
-    b.onclick = ()=>{
+    b.onclick=()=>{
       document.querySelectorAll('.info-buttons button').forEach(x=>x.classList.remove('active'));
       document.querySelectorAll('.info-section').forEach(s=>s.classList.remove('active'));
       b.classList.add('active');
@@ -231,19 +200,21 @@
     };
   });
 
-  // Order book & feed
+  // Order Book & Feed
   function genOB(){
-    const base = product==='knockout'?1.07: product==='stocks'?50:100;
-    let bids=[], asks=[];
+    let base=product==='knockout'?1.07:product==='stocks'?50:100;
+    const bids=[],asks=[];
     for(let i=5;i>0;i--){
       bids.push({p:(base-i*0.01).toFixed(4),q:Math.floor(Math.random()*50+1)});
       asks.push({p:(base+i*0.01).toFixed(4),q:Math.floor(Math.random()*50+1)});
     }
     const tb=document.querySelector('#orderBook tbody'); tb.innerHTML='';
-    for(let i=0;i<5;i++){
-      tb.innerHTML+=`<tr><td class="bid">${bids[i].q}</td><td class="bid">${bids[i].p}</td>
-          <td class="ask">${asks[i].p}</td><td class="ask">${asks[i].q}</td></tr>`;
-    }
+    bids.forEach((b,i)=>{
+      tb.innerHTML+=`<tr>
+        <td class="bid">${b.q}</td><td class="bid">${b.p}</td>
+        <td class="ask">${asks[i].p}</td><td class="ask">${asks[i].q}</td>
+      </tr>`;
+    });
   }
   function genFeed(){
     const now=new Date().toLocaleTimeString();
@@ -257,12 +228,12 @@
   }
   setInterval(genOB,1000); setInterval(genFeed,1200);
 
-  // Chart
+  // Chart + price update
   function resetChart(){
     const ctx=document.getElementById('chart').getContext('2d');
     if(chart) chart.destroy();
-    const base=product==='knockout'?1.07: product==='stocks'?50:100;
-    let data=Array.from({length:50},()=>base+(Math.random()*2-1)*0.5);
+    let base=product==='knockout'?1.07:product==='stocks'?50:100;
+    const data=Array.from({length:50},()=>base+(Math.random()*2-1)*0.5);
     chart=new Chart(ctx,{type:'line',data:{
       labels:data.map((_,i)=>i),datasets:[
         {data,label:'Price',borderColor:'#2d7efc',fill:false,tension:0.2,borderWidth:2},
@@ -272,17 +243,16 @@
          borderColor:'#27ae60',fill:false,borderDash:[5,5],tension:0.2}
       ]},options:{animation:false,scales:{x:{display:false},y:{display:true}}}
     });
-    // update
+    // update price & PnL
     setInterval(()=>{
-      const arr=chart.data.datasets[0].data;
-      const last=arr[arr.length-1];
+      const ds=chart.data.datasets[0].data;
+      const last=ds[ds.length-1];
       const change=(Math.random()*2-1)*(last*0.001);
       const next=Math.max(last+change,last*0.9);
-      arr.push(next); chart.data.labels.push(chart.data.labels.length+1);
-      if(arr.length>50){ arr.shift(); chart.data.labels.shift(); }
-      // recalc MA
-      ['datasets'][0]; // we leave MA static for simplicity
+      ds.push(next); chart.data.labels.push(chart.data.labels.length+1);
+      if(ds.length>50){ ds.shift(); chart.data.labels.shift(); }
       chart.update('none');
+      updateOpenPnL();
     },1000);
   }
   resetChart();
@@ -293,36 +263,63 @@
     const price=parseFloat(document.getElementById('price').value);
     const qty=parseInt(document.getElementById('qty').value);
     if(!price||!qty) return alert('Isi price & qty valid!');
-    const id=Date.now();
-    openOrders.push({id,prod:product,side,price,qty});
-    renderOpen(); document.getElementById('price').value=''; document.getElementById('qty').value='';
+    openOrders.push({id:Date.now(),prod:product,side,price,qty});
+    renderOpen();
+    document.getElementById('price').value=''; document.getElementById('qty').value='';
   }
   function renderOpen(){
-    const tb=document.querySelector('.order-list tbody');
-    tb.innerHTML='';
+    const tb=document.querySelector('.order-list tbody'); tb.innerHTML='';
+    const mkt=chart.data.datasets[0].data.slice(-1)[0];
     openOrders.forEach(o=>{
-      tb.innerHTML+=`<tr><td>${o.side}</td><td>${o.price.toFixed(4)}</td>
-        <td>${o.qty}</td><td><button onclick="cancel(${o.id})">✕</button></td></tr>`;
+      // compute unrealized PnL
+      let pnl=0;
+      const diff = (mkt - o.price);
+      if(o.side==='buy') pnl = diff * o.qty;
+      else pnl = -diff * o.qty;
+      tb.innerHTML+=`<tr>
+        <td>${o.side}</td><td>${o.price.toFixed(4)}</td><td>${o.qty}</td>
+        <td>${fmtR(Math.floor(pnl))}</td>
+        <td><button onclick="cancel(${o.id})">✕</button></td>
+      </tr>`;
     });
   }
   function cancel(id){
-    openOrders=openOrders.filter(o=>o.id!==id); renderOpen();
+    openOrders = openOrders.filter(o=>o.id!==id);
+    renderOpen();
   }
 
-  // Auto‑fill open orders
-  setInterval(()=>{
-    if(openOrders.length){
-      const o=openOrders.shift();
-      history.unshift({time:new Date().toLocaleTimeString(),prod:o.prod,side:o.side,price:o.price,qty:o.qty});
-      renderOpen(); renderHist();
-    }
-  },5000);
+  // Auto‐fill with probabilistic logic
+  function tryFill(){
+    if(!openOrders.length) return;
+    const mkt = chart.data.datasets[0].data.slice(-1)[0];
+    // check each order
+    openOrders = openOrders.filter(o=>{
+      // fill probability based on distance
+      const dist = Math.abs(mkt - o.price) / o.price; // relative
+      const prob = Math.min(0.5, 0.1 + (1 - dist)*0.4); 
+      if(Math.random() < prob){
+        // fill it
+        const diff = (mkt - o.price);
+        const realized = (o.side==='buy' ? diff * o.qty : -diff * o.qty);
+        balance += realized;
+        history.unshift({time:new Date().toLocaleTimeString(),...o,pnl:Math.floor(realized)});
+        updateBal(); renderHist();
+        return false; // remove from open
+      }
+      return true;
+    });
+    renderOpen();
+  }
+  setInterval(tryFill, 3000);
+
   function renderHist(){
-    const tb=document.querySelector('.history-list tbody');
-    tb.innerHTML='';
+    const tb=document.querySelector('.history-list tbody'); tb.innerHTML='';
     history.forEach(h=>{
-      tb.innerHTML+=`<tr><td>${h.time}</td><td>${h.prod}</td><td>${h.side}</td>
-        <td>${h.price.toFixed(4)}</td><td>${h.qty}</td></tr>`;
+      tb.innerHTML+=`<tr>
+        <td>${h.time}</td><td>${h.prod}</td><td>${h.side}</td>
+        <td>${h.price.toFixed(4)}</td><td>${h.qty}</td>
+        <td>${fmtR(h.pnl)}</td>
+      </tr>`;
     });
   }
 </script>
