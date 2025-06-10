@@ -1,103 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simulasi Trading King Zezy</title>
-  <!-- Chart.js CDN -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Pro Trading Simulator</title>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #f0f2f5; color: #333; }
-    .container { max-width: 960px; margin: 40px auto; padding: 20px; background: #fff;
-                 border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
-    h1 { text-align: center; margin-bottom: 20px; }
-    .balance { text-align: center; margin-bottom: 20px; font-size: 1.2em; }
-    .deposit { display: flex; justify-content: center; margin-bottom: 30px; gap:8px; }
-    .deposit input { width: 200px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    .deposit button { padding: 8px 16px; background: #ffc107; border: none; border-radius: 4px;
-                      cursor: pointer; transition: background .3s; }
-    .deposit button:hover { background: #e0a800; }
+    * { box-sizing: border-box; margin:0; padding:0; font-family: Arial, sans-serif; }
+    body { background: #f4f6f9; color: #333; }
+    .container { max-width:1200px; margin:20px auto; }
+    header { text-align:center; padding:10px; }
+    header h1 { font-size:1.8em; }
 
-    .btn-group { display: flex; justify-content: center; margin-bottom: 24px; }
-    .btn-group .btn {
-      flex: 1; margin: 0 8px; padding: 12px 0; background: #0069d9; color: #fff;
-      text-align: center; border-radius: 4px; cursor: pointer; transition: background .3s;
+    /* Toggle produk */
+    .prod-toggle { display:flex; justify-content:center; gap:10px; margin:20px 0; }
+    .prod-toggle button {
+      padding:10px 20px; border:none; border-radius:4px;
+      background:#2d7efc; color:#fff; cursor:pointer; transition:.2s;
     }
-    .btn-group .btn.active { background: #004085; }
-    .btn-group .btn:hover { background: #0053a6; }
+    .prod-toggle button.active { background:#1a5ed8; }
 
-    .section { display: none; padding: 16px 0; border-top: 1px solid #e0e0e0; }
-    .section.active { display: block; }
+    /* Grid layout */
+    .main-grid {
+      display:grid; grid-template-columns: 2fr 1fr; gap:20px;
+    }
+    .left-panel, .right-panel { background:#fff; border-radius:6px; padding:16px; }
+    .left-panel { display:grid; grid-template-rows: auto 200px; gap:20px; }
+    .chart-container { position:relative; height:350px; }
+    .indicators { margin-top:8px; font-size:.9em; color:#666; }
 
-    .card { background: #fafbfc; border: 1px solid #e3e6ea; border-radius: 6px;
-            padding: 20px; margin-bottom: 24px; }
-    .card h3 { margin-bottom: 8px; }
-    .card p { margin-bottom: 12px; line-height: 1.5; }
-    .card .chart-container { position: relative; height: 150px; }
-    .card .trade-group { display: flex; gap: 8px; margin-top: 12px; }
-    .card .trade-group input {
-      flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;
+    /* Order form */
+    .order-form { display:flex; gap:8px; margin-top:12px; }
+    .order-form input, .order-form select {
+      padding:8px; border:1px solid #ccc; border-radius:4px; flex:1;
     }
-    .card .trade-group button {
-      padding: 8px 12px; background: #28a745; color: #fff; border: none;
-      border-radius: 4px; cursor: pointer; transition: background .3s;
+    .order-form button {
+      padding:8px 12px; border:none; border-radius:4px; color:#fff;
+      cursor:pointer; transition:.2s;
     }
-    .card .trade-group button:hover { background: #1e7e34; }
+    .buy-btn { background:#28a745; }
+    .sell-btn { background:#dc3545; }
+    .buy-btn:hover { background:#218838; }
+    .sell-btn:hover { background:#a71d2a; }
+
+    /* Order book & trade feed */
+    .order-book, .trade-feed { margin-top:20px; }
+    .order-book table, .trade-feed table {
+      width:100%; border-collapse:collapse; font-size:.9em;
+    }
+    .order-book th, .order-book td, .trade-feed th, .trade-feed td {
+      border-bottom:1px solid #eee; padding:6px; text-align:right;
+    }
+    .order-book th { background:#fafafa; }
+    .order-book .bid { color:#28a745; }
+    .order-book .ask { color:#dc3545; }
+    .trade-feed .buy { color:#28a745; }
+    .trade-feed .sell { color:#dc3545; }
+
+    /* Right panel tabs */
+    .tabs { display:flex; gap:10px; }
+    .tabs button {
+      flex:1; padding:8px; border:none; background:#f0f2f5; cursor:pointer;
+      border-radius:4px 4px 0 0;
+    }
+    .tabs button.active { background:#fff; border-bottom:2px solid #2d7efc; }
+    .tab-content { border:1px solid #ddd; border-top:none; padding:10px; background:#fff; height:300px; overflow:auto; }
+    .order-list, .history-list { width:100%; font-size:.9em; }
+    .order-list th, .order-list td, .history-list th, .history-list td {
+      padding:6px; border-bottom:1px solid #eee; text-align:right;
+    }
+    .order-list th, .history-list th { background:#fafafa; }
   </style>
 </head>
 <body>
-
 <div class="container">
-  <h1>Simulasi Trading King Zezy</h1>
-  <div class="balance">Saldo kamu: <span id="balance">Rp 0</span></div>
+  <header><h1>Pro Trading Simulator</h1></header>
 
-  <div class="deposit">
-    <input type="number" id="depositAmount" placeholder="Masukkan jumlah deposit (Rp)" />
-    <button onclick="makeDeposit()">Deposit</button>
+  <div class="prod-toggle">
+    <button class="active" data-prod="spread">Call/Put Spread</button>
+    <button data-prod="knockout">Knock‑Out Options</button>
+    <button data-prod="stocks">Stock Options</button>
   </div>
 
-  <div class="btn-group">
-    <div class="btn active" data-target="spread">Call/Put Spread</div>
-    <div class="btn" data-target="knockout">Knock‑Out Options</div>
-    <div class="btn" data-target="stocks">Stock Options</div>
-  </div>
-
-  <!-- Call/Put Spread -->
-  <div id="spread" class="section active">
-    <div class="card">
-      <h3>Call/Put Spread</h3>
-      <p>Trading spread sederhana—risiko dan reward sudah ditentukan.</p>
-      <div class="chart-container"><canvas id="chartSpread"></canvas></div>
-      <div class="trade-group">
-        <input type="number" id="tradeSpreadAmt" placeholder="Rp untuk spread" />
-        <button onclick="executeTrade('spread')">Execute</button>
+  <div class="main-grid">
+    <!-- LEFT: Chart & Order Book + Feed -->
+    <div class="left-panel">
+      <div class="chart-container">
+        <canvas id="chart"></canvas>
+        <div class="indicators">Moving Avg (10), Moving Avg (30)</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="order-book">
+          <h4>Order Book</h4>
+          <table id="orderBook">
+            <thead>
+              <tr><th class="bid">Bid Qty</th><th class="bid">Bid Price</th><th class="ask">Ask Price</th><th class="ask">Ask Qty</th></tr>
+            </thead><tbody></tbody>
+          </table>
+        </div>
+        <div class="trade-feed">
+          <h4>Trade Feed</h4>
+          <table id="feedTable">
+            <thead><tr><th>Time</th><th>Side</th><th>Price</th><th>Qty</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Knock‑Out Options -->
-  <div id="knockout" class="section">
-    <div class="card">
-      <h3>Knock‑Out Options</h3>
-      <p>Level KO = stop‑loss otomatis. Jika hit, rugi penuh; jika tidak, profit sesuai move.</p>
-      <div class="chart-container"><canvas id="chartKO"></canvas></div>
-      <div class="trade-group">
-        <input type="number" id="tradeKOAmt" placeholder="Rp untuk KO" />
-        <button onclick="executeTrade('knockout')">Execute</button>
+    <!-- RIGHT: Order form & tabs -->
+    <div class="right-panel">
+      <h4>New Order (<span id="prodName">Spread</span>)</h4>
+      <div class="order-form">
+        <select id="side"><option value="buy">Buy</option><option value="sell">Sell</option></select>
+        <input type="number" id="price" placeholder="Price"/>
+        <input type="number" id="qty" placeholder="Qty"/>
+        <button class="buy-btn" onclick="placeOrder()">Place</button>
       </div>
-    </div>
-  </div>
 
-  <!-- Stock Options -->
-  <div id="stocks" class="section">
-    <div class="card">
-      <h3>Stock Options</h3>
-      <p>Hak beli/jual saham—profit/loss mengikuti % pergerakan pasar.</p>
-      <div class="chart-container"><canvas id="chartStocks"></canvas></div>
-      <div class="trade-group">
-        <input type="number" id="tradeStocksAmt" placeholder="Rp untuk opsi saham" />
-        <button onclick="executeTrade('stocks')">Execute</button>
+      <div class="tabs">
+        <button class="active" data-tab="open">Open Orders</button>
+        <button data-tab="history">Trade History</button>
+      </div>
+      <div id="open" class="tab-content">
+        <table class="order-list"><thead><tr><th>Side</th><th>Price</th><th>Qty</th><th>Action</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div id="history" class="tab-content" style="display:none;">
+        <table class="history-list"><thead><tr><th>Time</th><th>Prod</th><th>Side</th><th>Price</th><th>Qty</th></tr></thead><tbody></tbody></table>
       </div>
     </div>
   </div>
@@ -105,110 +135,138 @@
 
 <script>
   // State
-  let balance = 0;
+  let product = 'spread'; // spread, knockout, stocks
+  let openOrders = [];
+  let history = [];
 
-  // Utility
-  function fmtRupiah(x){
-    return 'Rp ' + x.toLocaleString('id-ID');
-  }
-
-  function updateBalance() {
-    document.getElementById('balance').textContent = fmtRupiah(balance);
-  }
-
-  // Deposit
-  function makeDeposit(){
-    const amt = parseInt(document.getElementById('depositAmount').value);
-    if(!amt || amt <=0) return alert('Masukkan jumlah deposit valid!');
-    balance += amt;
-    updateBalance();
-    document.getElementById('depositAmount').value = '';
-    alert('Deposit berhasil: ' + fmtRupiah(amt));
-  }
-
-  // Section toggle
-  document.querySelectorAll('.btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  // Init product toggle
+  document.querySelectorAll('.prod-toggle button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.prod-toggle button').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById(btn.dataset.target).classList.add('active');
+      product = btn.dataset.prod;
+      document.getElementById('prodName').textContent = btn.textContent;
+      resetChart();
     });
   });
 
-  // Random-walk chart update
-  function createChart(ctx, start, label){
-    const data = [start];
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [new Date().toLocaleTimeString()],
-        datasets: [{ data, label, fill:false, tension:0.3, borderWidth:2 }]
-      },
-      options: {
-        animation: false,
-        responsive: true,
-        scales: { x:{display:true}, y:{display:true} },
-        plugins: { legend:{display:false} }
-      }
+  // Tabs
+  document.querySelectorAll('.tabs button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+      document.getElementById(btn.dataset.tab).style.display = 'block';
     });
-    // update every second
-    setInterval(()=>{
-      const last = data[data.length-1];
-      const change = (Math.random()*2 -1) * (last * 0.001); // ±0.1%
-      const next = Math.max(last + change, last*0.9);
-      data.push(next);
-      chart.data.labels.push(new Date().toLocaleTimeString());
-      if(data.length>30){
-        data.shift(); chart.data.labels.shift();
-      }
-      chart.update('none');
-    }, 1000);
-    return chart;
+  });
+
+  // Order Book & Feed mock
+  function genOrderBook(){
+    const bids = [], asks = [];
+    let base = 100;
+    if(product==='knockout') base = 1.07;
+    if(product==='stocks') base = 50;
+    for(let i=5;i>0;i--){
+      bids.push({ price: (base - i*0.01).toFixed(4), qty: (Math.random()*50+1).toFixed(0) });
+      asks.push({ price: (base + i*0.01).toFixed(4), qty: (Math.random()*50+1).toFixed(0) });
+    }
+    const tbody = document.querySelector('#orderBook tbody');
+    tbody.innerHTML = '';
+    for(let i=0;i<5;i++){
+      tbody.innerHTML += `<tr>
+        <td class="bid">${bids[i].qty}</td><td class="bid">${bids[i].price}</td>
+        <td class="ask">${asks[i].price}</td><td class="ask">${asks[i].qty}</td>
+      </tr>`;
+    }
+  }
+  function genTradeFeed(){
+    const now = new Date().toLocaleTimeString();
+    const side = Math.random()<0.5?'buy':'sell';
+    let price = chart.data.datasets[0].data.slice(-1)[0];
+    price = (price * (1 + (Math.random()*2-1)*0.002)).toFixed(4);
+    const qty = Math.floor(Math.random()*20+1);
+    const row = `<tr>
+      <td>${now}</td><td class="${side}">${side}</td><td>${price}</td><td>${qty}</td>
+    </tr>`;
+    const tb = document.querySelector('#feedTable tbody');
+    tb.innerHTML = row + tb.innerHTML;
+    if(tb.children.length>20) tb.removeChild(tb.lastChild);
+  }
+  setInterval(genOrderBook, 1000);
+  setInterval(genTradeFeed, 1200);
+
+  // Chart with Moving Averages
+  let chart;
+  function resetChart(){
+    const ctx = document.getElementById('chart').getContext('2d');
+    if(chart) chart.destroy();
+    const base = product==='knockout'?1.07: product==='stocks'?50:100;
+    const data = Array.from({length:50},(_,i)=>base + (Math.random()*2-1)*0.5);
+    chart = new Chart(ctx, {
+      type:'line',
+      data:{ labels: data.map((_,i)=>i),
+             datasets:[
+               {data, label:'Price', borderColor:'#2d7efc', fill:false, tension:0.2, borderWidth:2},
+               { // MA10
+                 data: data.map((_,i,a)=>i<10?null: a.slice(i-10,i).reduce((s,v)=>s+v,0)/10),
+                 borderColor:'#f39c12', fill:false, borderDash:[5,5], tension:0.2
+               },
+               { // MA30
+                 data: data.map((_,i,a)=>i<30?null: a.slice(i-30,i).reduce((s,v)=>s+v,0)/30),
+                 borderColor:'#27ae60', fill:false, borderDash:[5,5], tension:0.2
+               }
+             ]},
+      options:{ animation:false, scales:{ x:{display:false}, y:{display:true}} }
+    });
+  }
+  resetChart();
+
+  // Place order
+  function placeOrder(){
+    const side = document.getElementById('side').value;
+    const price = parseFloat(document.getElementById('price').value);
+    const qty = parseInt(document.getElementById('qty').value);
+    if(!price||!qty) return alert('Isi price & qty valid!');
+    const id = Date.now();
+    openOrders.push({id, prod:product, side, price, qty});
+    renderOpen();
+  }
+  function renderOpen(){
+    const tb = document.querySelector('.order-list tbody');
+    tb.innerHTML = '';
+    openOrders.forEach(o=>{
+      tb.innerHTML += `<tr>
+        <td>${o.side}</td><td>${o.price.toFixed(4)}</td><td>${o.qty}</td>
+        <td><button onclick="cancel(${o.id})">✕</button></td>
+      </tr>`;
+    });
+  }
+  function cancel(id){
+    openOrders = openOrders.filter(o=>o.id!==id);
+    renderOpen();
   }
 
-  // Init charts
-  window.onload = ()=>{
-    createChart(document.getElementById('chartSpread').getContext('2d'), 100, 'Spread');
-    createChart(document.getElementById('chartKO').getContext('2d'), 1.0700, 'KO Level');
-    createChart(document.getElementById('chartStocks').getContext('2d'), 50, 'Stock Price');
-  };
+  // Simulate fills: random fill of first open order
+  setInterval(()=>{
+    if(openOrders.length){
+      const o = openOrders.shift();
+      history.unshift({
+        time: new Date().toLocaleTimeString(),
+        prod: o.prod, side: o.side, price: o.price, qty: o.qty
+      });
+      renderOpen(); renderHistory();
+    }
+  }, 5000);
 
-  // Execute simulated trade
-  function executeTrade(type){
-    let amtInput, outcome, profit;
-    if(type==='spread'){
-      amtInput = parseInt(document.getElementById('tradeSpreadAmt').value);
-      if(!amtInput||amtInput<1||amtInput>balance) return alert('Nominal trade invalid atau > saldo!');
-      // spread: win 80% atau lose 20%
-      outcome = Math.random()<0.5 ? 'win' : 'lose';
-      profit = outcome==='win' ? Math.floor(amtInput * 0.8) : -amtInput;
-      balance += profit;
-      document.getElementById('tradeSpreadAmt').value='';
-    }
-    else if(type==='knockout'){
-      amtInput = parseInt(document.getElementById('tradeKOAmt').value);
-      if(!amtInput||amtInput<1||amtInput>balance) return alert('Nominal trade invalid atau > saldo!');
-      // KO: 50% chance KO hit (lose full), else gain 50%
-      outcome = Math.random()<0.5 ? 'KO hit' : 'profit';
-      profit = outcome==='profit' ? Math.floor(amtInput * 0.5) : -amtInput;
-      balance += profit;
-      document.getElementById('tradeKOAmt').value='';
-    }
-    else if(type==='stocks'){
-      amtInput = parseInt(document.getElementById('tradeStocksAmt').value);
-      if(!amtInput||amtInput<1||amtInput>balance) return alert('Nominal trade invalid atau > saldo!');
-      // stock opt: profit/loss random ±10%
-      const pct = (Math.random()*2 -1) * 0.10;
-      profit = Math.floor(amtInput * pct);
-      outcome = profit>=0 ? 'gain' : 'loss';
-      balance += profit;
-      document.getElementById('tradeStocksAmt').value='';
-    }
-    updateBalance();
-    alert(`Trade ${type} outcome: ${outcome.toUpperCase()} ${fmtRupiah(profit)}\nSaldo sekarang: ${fmtRupiah(balance)}`);
+  function renderHistory(){
+    const tb = document.querySelector('.history-list tbody');
+    tb.innerHTML = '';
+    history.forEach(h=>{
+      tb.innerHTML += `<tr>
+        <td>${h.time}</td><td>${h.prod}</td><td>${h.side}</td><td>${h.price.toFixed(4)}</td><td>${h.qty}</td>
+      </tr>`;
+    });
   }
 </script>
-
 </body>
 </html>
