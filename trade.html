@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Pro Trading Simulator v3</title>
+<title>Pro Trading Simulator v4</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
@@ -39,17 +39,24 @@
   .buy{color:#28a745}.sell{color:#dc3545}
 
   /* Order form & tabs */
-  .order-form{display:flex;gap:8px;margin-bottom:16px}
-  .order-form select,.order-form input{padding:8px;border:1px solid #ccc;border-radius:4px;flex:1}
+  .order-form{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+  .order-form select,.order-form input{padding:8px;border:1px solid #ccc;border-radius:4px;width:100%}
   .order-form button{padding:8px;border:none;border-radius:4px;color:#fff;cursor:pointer;transition:.2s}
   .buy-btn{background:#28a745}.buy-btn:hover{background:#218838}
   .sell-btn{background:#dc3545}.sell-btn:hover{background:#a71d2a}
+
+  /* Exec mode */
+  .exec-mode{display:flex;gap:12px;align-items:center;margin-bottom:12px;font-size:.9em}
+
+  /* TP/SL buttons */
+  .tp-sl {display:flex;gap:6px;margin-bottom:12px}
+  .tp-sl button{padding:4px 8px;border:none;border-radius:4px;background:#6c757d;color:#fff;cursor:pointer;transition:.2s;font-size:.8em}
+  .tp-sl button:hover{background:#5a6268}
 
   .tabs{display:flex;gap:10px;margin-bottom:0}
   .tabs button{flex:1;padding:8px;border:none;background:#f0f2f5;cursor:pointer;border-radius:4px 4px 0 0}
   .tabs button.active{background:#fff;border-bottom:2px solid #2d7efc}
   .tab-content{border:1px solid #ddd;border-top:none;padding:10px;background:#fff;height:250px;overflow:auto}
-  .tab-content table{width:100%}
 
   /* Info */
   .info-buttons{display:flex;justify-content:center;gap:12px;margin:24px 0}
@@ -65,25 +72,25 @@
 <body>
 
 <div class="container">
-  <header><h1>Pro Trading Simulator v3</h1></header>
+  <header><h1>Pro Trading Simulator v4</h1></header>
 
   <!-- Wallet -->
   <div class="wallet">
     <div class="balance">Saldo: <span id="balance">Rp 0</span></div>
-    <input type="number" id="depositAmt" placeholder="Deposit (Rp)"/>
+    <input type="number" id="depositAmt" placeholder="Deposit (Rp)" />
     <button onclick="makeDeposit()">Deposit</button>
   </div>
 
   <!-- Produk -->
   <div class="prod-toggle">
-    <button class="active" data-prod="spread">Call/Put Spread</button>
-    <button data-prod="knockout">Knock‑Out Options</button>
+    <button class="active" data-prod="spread">Spread</button>
+    <button data-prod="knockout">KO Options</button>
     <button data-prod="stocks">Stock Options</button>
   </div>
 
   <!-- Main area -->
   <div class="main-grid">
-    <!-- Left: chart + book + feed -->
+    <!-- Left panel -->
     <div class="panel">
       <div class="chart-container"><canvas id="chart"></canvas></div>
       <div class="indicators">MA(10), MA(30)</div>
@@ -103,22 +110,31 @@
       </div>
     </div>
 
-    <!-- Right: order form & tables -->
+    <!-- Right panel -->
     <div class="panel">
       <h4>New Order (<span id="prodName">Spread</span>)</h4>
+      <div class="exec-mode">
+        <label><input type="radio" name="mode" value="manual" checked onchange="onModeChange()"> Manual</label>
+        <label><input type="radio" name="mode" value="market" onchange="onModeChange()"> Market Price</label>
+      </div>
+      <div class="tp-sl" id="tpSlControls">
+        <!-- TP/SL only for Spread & Stocks -->
+      </div>
       <div class="order-form">
         <select id="side"><option value="buy">Buy</option><option value="sell">Sell</option></select>
         <input type="number" id="price" placeholder="Price"/>
         <input type="number" id="qty" placeholder="Qty"/>
+        <!-- KO Level only for KO -->
+        <input type="number" id="koLevel" placeholder="KO Level" style="display:none"/>
         <button class="buy-btn" onclick="placeOrder()">Place</button>
       </div>
       <div class="tabs">
         <button class="active" data-tab="open">Open Orders</button>
-        <button data-tab="history">Trade History</button>
+        <button data-tab="history">History</button>
       </div>
       <div id="open" class="tab-content">
         <table class="order-list"><thead>
-          <tr><th>Side</th><th>Price</th><th>Qty</th><th>PnL</th><th>Action</th></tr>
+          <tr><th>Side</th><th>Price</th><th>Qty</th><th>PnL</th><th>KO&nbsp;Lvl</th><th>Action</th></tr>
         </thead><tbody></tbody></table>
       </div>
       <div id="history" class="tab-content" style="display:none">
@@ -135,52 +151,97 @@
     <button data-info="howto">Tatacara Trading</button>
   </div>
   <div id="about" class="info-section">
-    <h3>Tentang Ketiga Produk</h3>
+    <h3>Tentang Produk</h3>
     <ul>
-      <li><strong>Spread:</strong> risiko & reward terbatas di selisih harga. Profit linear dengan perubahan harga antara strike.</li>
-      <li><strong>KO:</strong> jika harga menyentuh KO level (entry±threshold) → posisi otomatis close rugi full, else profit linear.</li>
-      <li><strong>Stock Opt:</strong> profit/loss mengikuti % perubahan harga underlying.</li>
+      <li><strong>Spread:</strong> fixed‑range profit/loss.</li>
+      <li><strong>KO:</strong> KO Level = rugi penuh jika disentuh.</li>
+      <li><strong>Stock Opt:</strong> profit/loss linear mengikuti % movement.</li>
     </ul>
   </div>
   <div id="howto" class="info-section">
-    <h3>Tatacara Melakukan Trading</h3>
+    <h3>Tatacara</h3>
     <ul>
-      <li>Deposit, pilih produk, masukkan side/price/qty, klik Place.</li>
-      <li>Open orders muncul di tab Open Orders dengan unrealized PnL.</li>
-      <li>Sistem mengecek setiap detik—jika random &lt; probabilitas fill based on distance to market price, order ter‐fill.</li>
-      <li>Order ter‐fill dipindah ke Trade History dengan realized PnL, saldo otomatis ter‐update.</li>
+      <li>Pilih Manual (set price) atau Market (ambil harga sekarang).</li>
+      <li>Untuk Spread & Stocks: klik tombol TP/SL untuk set target otomatis.</li>
+      <li>Masukkan side/price/qty (dan KO Level untuk KO), klik Place.</li>
+      <li>Unrealized PnL & KO Level tampil di Open Orders.</li>
+      <li>Sistem cek tiap 2 detik:  
+        <ul>
+          <li>Jika harga ≥ TP atau ≤ SL → auto‑fill.</li>
+          <li>Untuk KO: jika harga ≤ KO Level (buy) atau ≥ KO Level (sell) → KO hit.</li>
+        </ul>
+      </li>
     </ul>
   </div>
 </div>
 
 <script>
-  // State
+  // state
   let balance=0, product='spread', openOrders=[], history=[], chart;
+  const fmtR = x=>'Rp '+x.toLocaleString('id-ID');
 
-  // Utils
-  const fmtR=(x)=>'Rp '+x.toLocaleString('id-ID');
-  function updateBal(){ document.getElementById('balance').textContent=fmtR(balance); }
-
-  // Deposit
+  // wallet
   function makeDeposit(){
-    let v=parseInt(document.getElementById('depositAmt').value);
-    if(!v||v<=0) return alert('Masukkan jumlah valid!');
+    const v=+document.getElementById('depositAmt').value;
+    if(!v||v<=0) return alert('Jumlah valid!');
     balance+=v; updateBal();
     document.getElementById('depositAmt').value='';
   }
+  function updateBal(){ document.getElementById('balance').textContent=fmtR(balance); }
 
-  // Product toggle
+  // product toggle
   document.querySelectorAll('.prod-toggle button').forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll('.prod-toggle button').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
       product=b.dataset.prod;
       document.getElementById('prodName').textContent=b.textContent;
+      setupForm();
       resetChart();
     };
   });
 
-  // Tabs
+  // mode switch
+  function onModeChange(){
+    const m = document.querySelector('input[name=mode]:checked').value;
+    document.getElementById('price').disabled = (m==='market');
+    if(m==='market'){
+      // set current price
+      const cur = chart.data.datasets[0].data.slice(-1)[0];
+      document.getElementById('price').value = cur.toFixed(4);
+    }
+  }
+
+  // TP/SL controls
+  function setupForm(){
+    const tpSl = document.getElementById('tpSlControls');
+    tpSl.innerHTML='';
+    // show KO level only if KO
+    document.getElementById('koLevel').style.display = (product==='knockout'?'inline-block':'none');
+    if(product==='spread'||product==='stocks'){
+      ['TP 10%','TP 50%','TP 100%','SL 10%','SL 25%','SL 50%'].forEach(label=>{
+        const btn=document.createElement('button');
+        btn.textContent=label;
+        btn.onclick=()=>setTpSl(label);
+        tpSl.appendChild(btn);
+      });
+    }
+  }
+  function setTpSl(label){
+    const priceIn = +document.getElementById('price').value;
+    let tp=null, sl=null;
+    if(label.startsWith('TP')){
+      const pct=+label.match(/(\d+)%/)[1]/100;
+      tp = priceIn*(1 + (label.includes('SL')?-pct:pct));
+    } else {
+      const pct=+label.match(/(\d+)%/)[1]/100;
+      sl = priceIn*(1 - pct);
+    }
+    document.getElementById('tpSlControls').dataset.tp = tp||document.getElementById('tpSlControls').dataset.tp;
+    document.getElementById('tpSlControls').dataset.sl = sl||document.getElementById('tpSlControls').dataset.sl;
+  }
+
+  // order form & tabs
   document.querySelectorAll('.tabs button').forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
@@ -190,17 +251,7 @@
     };
   });
 
-  // Info buttons
-  document.querySelectorAll('.info-buttons button').forEach(b=>{
-    b.onclick=()=>{
-      document.querySelectorAll('.info-buttons button').forEach(x=>x.classList.remove('active'));
-      document.querySelectorAll('.info-section').forEach(s=>s.classList.remove('active'));
-      b.classList.add('active');
-      document.getElementById(b.dataset.info).classList.add('active');
-    };
-  });
-
-  // Order Book & Feed
+  // order book & feed mocks
   function genOB(){
     let base=product==='knockout'?1.07:product==='stocks'?50:100;
     const bids=[],asks=[];
@@ -210,10 +261,8 @@
     }
     const tb=document.querySelector('#orderBook tbody'); tb.innerHTML='';
     bids.forEach((b,i)=>{
-      tb.innerHTML+=`<tr>
-        <td class="bid">${b.q}</td><td class="bid">${b.p}</td>
-        <td class="ask">${asks[i].p}</td><td class="ask">${asks[i].q}</td>
-      </tr>`;
+      tb.innerHTML+=`<tr><td class="bid">${b.q}</td><td class="bid">${b.p}</td>
+        <td class="ask">${asks[i].p}</td><td class="ask">${asks[i].q}</td></tr>`;
     });
   }
   function genFeed(){
@@ -228,89 +277,113 @@
   }
   setInterval(genOB,1000); setInterval(genFeed,1200);
 
-  // Chart + price update
+  // chart + update
   function resetChart(){
     const ctx=document.getElementById('chart').getContext('2d');
     if(chart) chart.destroy();
-    let base=product==='knockout'?1.07:product==='stocks'?50:100;
+    const base=product==='knockout'?1.07:product==='stocks'?50:100;
     const data=Array.from({length:50},()=>base+(Math.random()*2-1)*0.5);
     chart=new Chart(ctx,{type:'line',data:{
       labels:data.map((_,i)=>i),datasets:[
         {data,label:'Price',borderColor:'#2d7efc',fill:false,tension:0.2,borderWidth:2},
-        {data:data.map((v,i,a)=>i<10?null:a.slice(i-10,i).reduce((s,x)=>s+x,0)/10),
-         borderColor:'#f39c12',fill:false,borderDash:[5,5],tension:0.2},
-        {data:data.map((v,i,a)=>i<30?null:a.slice(i-30,i).reduce((s,x)=>s+x,0)/30),
-         borderColor:'#27ae60',fill:false,borderDash:[5,5],tension:0.2}
+        {data:data.map((v,i,a)=>i<10?null:a.slice(i-10,i).reduce((s,x)=>s+x,0)/10),borderColor:'#f39c12',fill:false,borderDash:[5,5],tension:0.2},
+        {data:data.map((v,i,a)=>i<30?null:a.slice(i-30,i).reduce((s,x)=>s+x,0)/30),borderColor:'#27ae60',fill:false,borderDash:[5,5],tension:0.2}
       ]},options:{animation:false,scales:{x:{display:false},y:{display:true}}}
     });
-    // update price & PnL
-    setInterval(()=>{
+    onModeChange(); setupForm();
+    setInterval(()=>{ // price trek & pnl update
       const ds=chart.data.datasets[0].data;
       const last=ds[ds.length-1];
       const change=(Math.random()*2-1)*(last*0.001);
-      const next=Math.max(last+change,last*0.9);
+      const next=Math.max(last+change, last*0.9);
       ds.push(next); chart.data.labels.push(chart.data.labels.length+1);
       if(ds.length>50){ ds.shift(); chart.data.labels.shift(); }
-      chart.update('none');
-      updateOpenPnL();
+      chart.update('none'); updateOpenPnL(); tryFill();
     },1000);
   }
   resetChart();
 
-  // Orders
+  // orders
   function placeOrder(){
     const side=document.getElementById('side').value;
-    const price=parseFloat(document.getElementById('price').value);
-    const qty=parseInt(document.getElementById('qty').value);
-    if(!price||!qty) return alert('Isi price & qty valid!');
-    openOrders.push({id:Date.now(),prod:product,side,price,qty});
+    const price=+document.getElementById('price').value;
+    const qty=+document.getElementById('qty').value;
+    if(!price||!qty) return alert('Price & qty valid!');
+    const koL = +document.getElementById('koLevel').value || null;
+    const tp = +document.getElementById('tpSlControls').dataset.tp || null;
+    const sl = +document.getElementById('tpSlControls').dataset.sl || null;
+    openOrders.push({id:Date.now(),prod:product,side,price,qty,koL,tp,sl});
     renderOpen();
-    document.getElementById('price').value=''; document.getElementById('qty').value='';
   }
   function renderOpen(){
     const tb=document.querySelector('.order-list tbody'); tb.innerHTML='';
     const mkt=chart.data.datasets[0].data.slice(-1)[0];
     openOrders.forEach(o=>{
-      // compute unrealized PnL
       let pnl=0;
-      const diff = (mkt - o.price);
-      if(o.side==='buy') pnl = diff * o.qty;
-      else pnl = -diff * o.qty;
+      if(o.prod!=='knockout'){
+        pnl = (mkt - o.price) * o.qty * (o.side==='sell'?-1:1);
+      } else {
+        // KO PnL: full loss if hit, else linear
+        pnl = (mkt > o.koL ? (mkt - o.price)*o.qty : -o.qty*o.price);
+        if(o.side==='sell') pnl = -pnl;
+      }
       tb.innerHTML+=`<tr>
         <td>${o.side}</td><td>${o.price.toFixed(4)}</td><td>${o.qty}</td>
         <td>${fmtR(Math.floor(pnl))}</td>
+        <td>${o.koL?o.koL.toFixed(4):'-'}</td>
         <td><button onclick="cancel(${o.id})">✕</button></td>
       </tr>`;
     });
   }
+  function updateOpenPnL(){ renderOpen(); }
+
   function cancel(id){
-    openOrders = openOrders.filter(o=>o.id!==id);
+    openOrders=openOrders.filter(o=>o.id!==id);
     renderOpen();
   }
 
-  // Auto‐fill with probabilistic logic
+  // fill logic
   function tryFill(){
     if(!openOrders.length) return;
-    const mkt = chart.data.datasets[0].data.slice(-1)[0];
-    // check each order
+    const mkt=chart.data.datasets[0].data.slice(-1)[0];
     openOrders = openOrders.filter(o=>{
-      // fill probability based on distance
-      const dist = Math.abs(mkt - o.price) / o.price; // relative
-      const prob = Math.min(0.5, 0.1 + (1 - dist)*0.4); 
-      if(Math.random() < prob){
-        // fill it
-        const diff = (mkt - o.price);
-        const realized = (o.side==='buy' ? diff * o.qty : -diff * o.qty);
-        balance += realized;
-        history.unshift({time:new Date().toLocaleTimeString(),...o,pnl:Math.floor(realized)});
-        updateBal(); renderHist();
-        return false; // remove from open
+      // KO immediate fill if KO level crossed
+      if(o.prod==='knockout'){
+        const hit = (o.side==='buy'&&mkt<=o.koL) || (o.side==='sell'&&mkt>=o.koL);
+        if(hit){
+          settle(o,mkt); return false;
+        }
+      }
+      // TP/SL for spread & stock
+      if(o.tp && ((o.side==='buy'&&mkt>=o.tp)||(o.side==='sell'&&mkt<=o.tp))){
+        settle(o,o.tp); return false;
+      }
+      if(o.sl && ((o.side==='buy'&&mkt<=o.sl)||(o.side==='sell'&&mkt>=o.sl))){
+        settle(o,o.sl); return false;
+      }
+      // probabilistic fill if no auto condition
+      const dist=Math.abs(mkt-o.price)/o.price;
+      const prob=Math.min(0.5,0.1+(1-dist)*0.4);
+      if(Math.random()<prob){
+        settle(o,mkt); return false;
       }
       return true;
     });
     renderOpen();
   }
-  setInterval(tryFill, 3000);
+
+  function settle(o,fillPrice){
+    // calculate realized PnL
+    let pnl=0;
+    if(o.prod!=='knockout'){
+      pnl=(fillPrice - o.price)*o.qty*(o.side==='sell'?-1:1);
+    } else {
+      pnl = -o.qty*o.price * (o.side==='buy'?1:-1);
+    }
+    balance+=pnl; updateBal();
+    history.unshift({time:new Date().toLocaleTimeString(),...o,pnl:Math.floor(pnl)});
+    renderHist();
+  }
 
   function renderHist(){
     const tb=document.querySelector('.history-list tbody'); tb.innerHTML='';
