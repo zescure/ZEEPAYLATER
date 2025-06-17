@@ -183,6 +183,53 @@
   color: #90caf9;
   margin-top: 30px;
 }
+#faq-sintesis {
+  max-width: 700px;
+  margin: 3rem auto;
+  padding: 1rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+#faq-sintesis h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.faq-item {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: #f5f5f5;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.faq-question:hover {
+  background-color: #e0e0e0;
+}
+
+.faq-answer {
+  padding: 1rem;
+  display: none;
+  font-size: 0.95rem;
+  color: #444;
+  background-color: #fafafa;
+}
   </style>
 </head>
 <body>
@@ -339,6 +386,36 @@
         </p><span class="side-right"></span>
       </div>
 
+      <section id="faq-sintesis">
+  <h2>Tanya-Jawab Seputar Komunitas Sintesis</h2>
+
+  <div class="faq-item">
+    <button class="faq-question">❓ Komunitas ini buat orang pinter ya?</button>
+    <div class="faq-answer">Tempat ngumpul orang dari berbagai latar belakang yang mau belajar, diskusi, dan mikir bareng. Kita bebas mikir tapi tetap punya nilai. Bukan liar, tapi gak tunduk pada dogma.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question">❓ Harus ngerti filsafat atau agama dulu?</button>
+    <div class="faq-answer">Nggak. Justru di sini kita bareng-bareng nyari tahu. Gak ada yang paling benar, yang penting terbuka untuk ngobrol dan saling dengerin.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question">❓ Ngapain aja sih di komunitas ini?</button>
+    <div class="faq-answer">Diskusi, sharing ide, ngobrolin sains, budaya, agama, bahkan kadang film dan game juga. Kadang serius, kadang absurd, tapi semuanya bermakna.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question">❓ Komunitas ini berbau politik atau aliran tertentu?</button>
+    <div class="faq-answer">Enggak. Kita netral. Kita percaya semua orang punya sisi baik, dan Sintesis cuma tempat buat ngulik ide dan nilai bersama, tanpa dorong agenda.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-question">❓ Kalau beda pendapat gimana?</button>
+    <div class="faq-answer">Itu bagus! Asal sopan dan mau saling belajar, perbedaan justru jadi bahan tumbuh. Sintesis bukan soal siapa yang menang, tapi siapa yang terbuka.</div>
+  </div>
+
+</section>
+      
       <section class="sintesis-description">
   <div class="desc-container">
     <h2>Apa Itu Sintesis Group?</h2>
@@ -492,6 +569,19 @@
         entries.forEach(e=>e.target.classList.toggle('visible', e.isIntersecting));
       },{threshold:0.2}).observe(m);
     });
+    document.querySelectorAll('.faq-question').forEach(button => {
+  button.addEventListener('click', () => {
+    const answer = button.nextElementSibling;
+
+    // Tutup semua selain yang diklik
+    document.querySelectorAll('.faq-answer').forEach(ans => {
+      if (ans !== answer) ans.style.display = 'none';
+    });
+
+    // Toggle yang diklik
+    answer.style.display = (answer.style.display === 'block') ? 'none' : 'block';
+  });
+});
 
     // popup
     document.getElementById('joinBtn').onclick = ()=>document.getElementById('overlay').style.display='flex';
