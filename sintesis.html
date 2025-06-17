@@ -247,41 +247,51 @@ body::before {
 
   <script>
     // stars canvas
-    const canvas = document.getElementById('stars');
-    const ctx = canvas.getContext('2d');
-    let w = canvas.width = innerWidth;
-    let h = canvas.height = innerHeight;
-    const stars = Array.from({length:200}, () => ({
-      x: Math.random()*w, y: Math.random()*h,
-      r: Math.random()*1.2, d: Math.random()*2
-    }));
-    function draw() {
-      ctx.clearRect(0,0,w,h);
-      stars.forEach(s => {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(255,255,255,'+ (s.d/2) +')';
-        ctx.fill();
-        s.y += s.d/2;
-        if (s.y>h) s.y = 0;
-      });
-      requestAnimationFrame(draw);
-    }
-    draw();
-    window.onresize = ()=>{ w=canvas.width=innerWidth; h=canvas.height=innerHeight; };
-document.getElementById('btnLearnMore')
-  .addEventListener('click', () => document.getElementById('motos').scrollIntoView({ behavior: 'smooth' }));
-    // scroll reveal
-    document.querySelectorAll('.motto').forEach(m => {
-      new IntersectionObserver(entries => {
-        entries.forEach(e => e.target.classList.toggle('visible', e.isIntersecting));
-      }, {threshold:0.2}).observe(m);
-    });
+    // stars canvas (tetap sama)
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let w = canvas.width = innerWidth;
+let h = canvas.height = innerHeight;
+const stars = Array.from({length:200}, () => ({
+  x: Math.random()*w, y: Math.random()*h,
+  r: Math.random()*1.2, d: Math.random()*2
+}));
+function draw() {
+  ctx.clearRect(0,0,w,h);
+  stars.forEach(s => {
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,'+ (s.d/2) +')';
+    ctx.fill();
+    s.y += s.d/2;
+    if (s.y>h) s.y = 0;
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+window.onresize = ()=>{ w=canvas.width=innerWidth; h=canvas.height=innerHeight; };
 
-    // popup
-    document.getElementById('joinBtn').onclick = ()=> document.getElementById('overlay').style.display='flex';
-    document.getElementById('closeBtn').onclick = ()=> document.getElementById('overlay').style.display='none';
-    document.getElementById('overlay').onclick = e=>{ if(e.target===e.currentTarget) e.currentTarget.style.display='none'; };
+// scroll ke section motos hanya ketika tombol diklik
+document.getElementById('btnLearnMore')
+  .addEventListener('click', () => document.getElementById('motos')
+    .scrollIntoView({ behavior: 'smooth' }));
+
+// scroll reveal untuk setiap motto
+document.querySelectorAll('.motto').forEach(m => {
+  new IntersectionObserver(entries => {
+    entries.forEach(e => e.target.classList.toggle('visible', e.isIntersecting));
+  }, {threshold:0.2}).observe(m);
+});
+
+// popup untuk join
+document.getElementById('joinBtn').onclick = () =>
+  document.getElementById('overlay').style.display = 'flex';
+document.getElementById('closeBtn').onclick = () =>
+  document.getElementById('overlay').style.display = 'none';
+document.getElementById('overlay').onclick = e => {
+  if (e.target === e.currentTarget)
+    e.currentTarget.style.display = 'none';
+};
   </script>
 </body>
 </html>
