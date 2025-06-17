@@ -13,49 +13,91 @@
       color: #fff;
       background: #000;
       overflow-x: hidden;
+      position: relative;
     }
-    /* Space background layers */
-        /* Space background layers */
-    /* Space background layers */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background:
-    url('https://images.unsplash.com/photo-1519415943484-335c4175ae3b?auto=format&fit=crop&w=1920&h=1080') center/cover no-repeat,   /* nebula */
-    url('https://images.unsplash.com/photo-1560921231-240ec65d6c24?auto=format&fit=crop&w=800&h=800') center/contain no-repeat,    /* black hole */
-    url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1920&h=1080') center/cover no-repeat,   /* galaksi */
-    url('https://images.unsplash.com/photo-1533304606269-53a945a97ee4?auto=format&fit=crop&w=800&h=800') center/contain no-repeat;    /* quasar */
-  opacity: 0.7;
-  z-index: -3;
-  animation: rotateBG 200s linear infinite;
-}
-    @keyframes rotateBG { to { transform: rotate(360deg); } }
-    /* Stars canvas */
-    #stars {
+
+    /* full‐screen canvases */
+    #nebula, #stars {
       position: fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      z-index: -2;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: block;
+      z-index: -4;
     }
+    #stars { z-index: -3; }
+
     /* Sections */
     section { min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 20px; }
     #welcome { background: rgba(0,0,0,0.4); }
-    #motos { background: rgba(0,0,0,0.6); }
-    h1 { font-size:3rem; letter-spacing:2px; margin-bottom:0.5em; text-shadow:0 0 10px rgba(0,0,0,0.5); }
-    p.lead { font-size:1.1rem; max-width:600px; line-height:1.5; margin: 0 auto 1.5em; }
-    .btn { padding:0.8em 2em; font-size:1rem; background:rgba(255,255,255,0.1); border:2px solid #0af; border-radius:50px; cursor:pointer; color:#0af; transition: all .3s; }
-    .btn:hover { background:#0af; color:#111; }
+    #motos    { background: rgba(0,0,0,0.6); }
+
+    h1 {
+      font-size:3rem;
+      letter-spacing:2px;
+      margin-bottom:0.5em;
+      text-shadow:0 0 10px rgba(0,0,0,0.5);
+    }
+    p.lead {
+      font-size:1.1rem;
+      max-width:600px;
+      line-height:1.5;
+      margin: 0 auto 1.5em;
+    }
+    .btn {
+      padding:0.8em 2em;
+      font-size:1rem;
+      background:rgba(255,255,255,0.1);
+      border:2px solid #0af;
+      border-radius:50px;
+      cursor:pointer;
+      color:#0af;
+      transition: all .3s;
+    }
+    .btn:hover {
+      background:#0af;
+      color:#111;
+    }
+
     /* Motto layout */
-    .motto { position: relative; margin:60px 0; padding:20px 30px; opacity:0; transform: translateY(30px); transition: all .6s ease; }
-    .motto.visible { opacity:1; transform: translateY(0); }
-    .motto h2 { font-size:1.3rem; font-weight:600; margin-bottom:0.3em; transition: color .3s; }
-    .motto p { font-size:0.9rem; opacity:0.85; margin-bottom:0.4em; transition: color .3s; }
-    .motto .small-text { font-size:0.75rem; opacity:0.6; line-height:1.3; transition: color .3s; }
+    .container { max-width:800px; margin:0 auto; width:100%; }
+    .motto {
+      position: relative;
+      margin:60px 0;
+      padding:20px 30px;
+      opacity:0;
+      transform: translateY(30px);
+      transition: all .6s ease;
+    }
+    .motto.visible {
+      opacity:1;
+      transform: translateY(0);
+    }
+    .motto h2 {
+      font-size:1.3rem;
+      font-weight:600;
+      margin-bottom:0.3em;
+      transition: color .3s;
+    }
+    .motto p {
+      font-size:0.9rem;
+      opacity:0.85;
+      margin-bottom:0.4em;
+      transition: color .3s;
+    }
+    .motto .small-text {
+      font-size:0.75rem;
+      opacity:0.6;
+      line-height:1.3;
+      transition: color .3s;
+    }
+    /* gradient borders */
     .motto::before, .motto::after, .motto .side-left, .motto .side-right {
-      content: ''; position:absolute; background: linear-gradient(90deg,#0af,#f0f,#0af);
-      background-size:200% 200%; opacity:0; transition: opacity .6s;
+      content: '';
+      position:absolute;
+      background: linear-gradient(90deg,#0af,#f0f,#0af);
+      background-size:200% 200%;
+      opacity:0;
+      transition: opacity .6s;
       animation: borderMove 4s linear infinite;
     }
     .motto.visible::before, .motto.visible::after, .motto.visible .side-left, .motto.visible .side-right {
@@ -65,22 +107,56 @@ body::before {
     .motto::after  { bottom:0; right:0; width:2px; height:100%; animation-direction:reverse; }
     .motto .side-left  { top:0; left:0; width:2px; height:100%; }
     .motto .side-right { bottom:0; right:0; width:100%; height:2px; animation-direction:reverse; }
-    @keyframes borderMove { 0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;} }
-    .motto:hover h2, .motto:hover p, .motto:hover .small-text { color:#0af; }
+    @keyframes borderMove {
+      0%   { background-position:0% 50%; }
+      50%  { background-position:100% 50%; }
+      100% { background-position:0% 50%; }
+    }
+    .motto:hover h2, .motto:hover p, .motto:hover .small-text {
+      color:#0af;
+    }
     .motto:hover::before, .motto:hover::after, .motto:hover .side-left, .motto:hover .side-right {
       background: linear-gradient(90deg,#f0f,#0af,#f0f);
     }
+
     /* Popup */
-    .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:10; }
-    .popup { background:#111; padding:30px; border-radius:8px; text-align:center; max-width:320px; }
+    .overlay {
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.85);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:10;
+    }
+    .popup {
+      background:#111;
+      padding:30px;
+      border-radius:8px;
+      text-align:center;
+      max-width:320px;
+    }
     .popup img { width:80px; margin-bottom:1em; }
-    .links a { display:block; color:#0af; margin:0.5em 0; text-decoration:none; transition:color .2s; }
+    .links a {
+      display:block;
+      color:#0af;
+      margin:0.5em 0;
+      text-decoration:none;
+      transition:color .2s;
+    }
     .links a:hover { color:#fff; }
-    .close-btn { margin-top:1em; cursor:pointer; font-size:0.8rem; text-decoration:underline; color:#888; }
+    .close-btn {
+      margin-top:1em;
+      cursor:pointer;
+      font-size:0.8rem;
+      text-decoration:underline;
+      color:#888;
+    }
   </style>
 </head>
 <body>
 
+  <canvas id="nebula"></canvas>
   <canvas id="stars"></canvas>
 
   <section id="welcome">
@@ -90,14 +166,13 @@ body::before {
         Kami datang dari kekurangan masing-masing untuk membuat keutuhan —  
         tapi bukan melawan Tuhan seperti zaman dunia masih satu bahasa dan Menara Tinggi.
       </p>
-      <button class="btn" onclick="document.getElementById('motos').scrollIntoView()">Ingin tahu lebih banyak</button>
+      <button id="btnLearnMore" class="btn">Ingin tahu lebih banyak</button>
     </div>
   </section>
 
   <section id="motos">
     <div class="container">
       <h1>Our Motos</h1>
-
       <!-- 1 -->
       <div class="motto"><span class="side-left"></span>
         <h2>“Yang kami tau kami tidak tau.”</h2>
@@ -236,62 +311,131 @@ body::before {
   <div class="overlay" id="overlay">
     <div class="popup">
       <img src="https://via.placeholder.com/80x80.png?text=Logo" alt="Sintesis Logo" />
-      <div class="links">
+      <div class="links">  
         <a href="https://instagram.com/sintesisgroup" target="_blank">Instagram</a>
-        <a href="https://t.me/sintesisgroup" target="_blank">Telegram</a>
-        <a href="https://wa.me/6281234567890" target="_blank">WhatsApp</a>
+        <a href="https://t.me/sintesisgroup"      target="_blank">Telegram</a>
+        <a href="https://wa.me/6281234567890"      target="_blank">WhatsApp</a>
       </div>
       <div class="close-btn" id="closeBtn">Tutup</div>
     </div>
   </div>
 
   <script>
-    // stars canvas
-    // stars canvas (tetap sama)
-const canvas = document.getElementById('stars');
-const ctx = canvas.getContext('2d');
-let w = canvas.width = innerWidth;
-let h = canvas.height = innerHeight;
-const stars = Array.from({length:200}, () => ({
-  x: Math.random()*w, y: Math.random()*h,
-  r: Math.random()*1.2, d: Math.random()*2
-}));
-function draw() {
-  ctx.clearRect(0,0,w,h);
-  stars.forEach(s => {
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,255,255,'+ (s.d/2) +')';
-    ctx.fill();
-    s.y += s.d/2;
-    if (s.y>h) s.y = 0;
-  });
-  requestAnimationFrame(draw);
-}
-draw();
-window.onresize = ()=>{ w=canvas.width=innerWidth; h=canvas.height=innerHeight; };
+    // Nebula + galaxy + black hole
+    const nebulaCanvas = document.getElementById('nebula');
+    const nctx = nebulaCanvas.getContext('2d');
+    let nw = nebulaCanvas.width  = innerWidth;
+    let nh = nebulaCanvas.height = innerHeight;
+    function drawCloud(x,y,r,color) {
+      const grad = nctx.createRadialGradient(x,y,r*0.2,x,y,r);
+      grad.addColorStop(0, color+'22');
+      grad.addColorStop(1, color+'00');
+      nctx.fillStyle = grad;
+      nctx.beginPath();
+      nctx.arc(x,y,r,0,Math.PI*2);
+      nctx.fill();
+    }
+    function drawSwirl(cx,cy,arms,len,color) {
+      nctx.save();
+      nctx.translate(cx,cy);
+      for(let i=0;i<arms;i++){
+        const ang = (i/arms)*Math.PI*2 + performance.now()*0.0001;
+        nctx.rotate(ang);
+        nctx.beginPath();
+        nctx.moveTo(0,0);
+        nctx.lineTo(len,0);
+        nctx.strokeStyle = color;
+        nctx.lineWidth = 2;
+        nctx.stroke();
+      }
+      nctx.restore();
+    }
+    function drawBlackHole(cx,cy,r) {
+      nctx.save();
+      nctx.globalCompositeOperation='destination-out';
+      nctx.beginPath();
+      nctx.arc(cx,cy,r,0,Math.PI*2);
+      nctx.fill();
+      nctx.restore();
+    }
+    function animateNebula(){
+      nctx.clearRect(0,0,nw,nh);
+      for(let i=0;i<6;i++){
+        drawCloud(Math.random()*nw, Math.random()*nh, Math.random()*400+200,
+          `hsla(${180+Math.random()*180},60%,70%,`);
+      }
+      drawSwirl(nw/2, nh/2, 5, Math.min(nw,nh)*0.3, 'rgba(255,255,255,0.1)');
+      drawBlackHole(nw/2, nh/2, 100);
+      requestAnimationFrame(animateNebula);
+    }
+    animateNebula();
+    window.addEventListener('resize', ()=>{
+      nw = nebulaCanvas.width  = innerWidth;
+      nh = nebulaCanvas.height = innerHeight;
+    });
 
-// scroll ke section motos hanya ketika tombol diklik
-document.getElementById('btnLearnMore')
-  .addEventListener('click', () => document.getElementById('motos')
-    .scrollIntoView({ behavior: 'smooth' }));
+    // Stars + meteors
+    const starCanvas = document.getElementById('stars');
+    const sctx = starCanvas.getContext('2d');
+    let sw = starCanvas.width  = innerWidth;
+    let sh = starCanvas.height = innerHeight;
+    const stars = Array.from({length:300},()=>{
+      return { x:Math.random()*sw, y:Math.random()*sh,
+               r:Math.random()*1.2+0.3, d:Math.random()*1.5 };
+    });
+    const meteors = [];
+    function spawnMeteor(){
+      meteors.push({
+        x:Math.random()*sw, y:0,
+        vx:(Math.random()*0.5+1)*2, vy:(Math.random()*0.2+0.5)*2,
+        len:Math.random()*80+50, alpha:1
+      });
+      if(meteors.length>5) meteors.shift();
+    }
+    setInterval(spawnMeteor,2000);
+    function drawStars(){
+      sctx.clearRect(0,0,sw,sh);
+      stars.forEach(s=>{
+        sctx.beginPath();
+        sctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        sctx.fillStyle = `rgba(255,255,255,${s.d/2})`;
+        sctx.fill();
+      });
+      meteors.forEach(m=>{
+        sctx.beginPath();
+        sctx.moveTo(m.x,m.y);
+        sctx.lineTo(m.x-m.vx*m.len, m.y-m.vy*m.len);
+        sctx.strokeStyle = `rgba(255,255,255,${m.alpha})`;
+        sctx.lineWidth=2;
+        sctx.stroke();
+        m.x+=m.vx; m.y+=m.vy; m.alpha-=0.005;
+      });
+      while(meteors.length && meteors[0].alpha<=0) meteors.shift();
+      requestAnimationFrame(drawStars);
+    }
+    drawStars();
+    window.addEventListener('resize',()=>{
+      sw = starCanvas.width  = innerWidth;
+      sh = starCanvas.height = innerHeight;
+    });
 
-// scroll reveal untuk setiap motto
-document.querySelectorAll('.motto').forEach(m => {
-  new IntersectionObserver(entries => {
-    entries.forEach(e => e.target.classList.toggle('visible', e.isIntersecting));
-  }, {threshold:0.2}).observe(m);
-});
+    // scroll to motos
+    document.getElementById('btnLearnMore').addEventListener('click', ()=>{
+      document.getElementById('motos')
+        .scrollIntoView({ behavior:'smooth' });
+    });
 
-// popup untuk join
-document.getElementById('joinBtn').onclick = () =>
-  document.getElementById('overlay').style.display = 'flex';
-document.getElementById('closeBtn').onclick = () =>
-  document.getElementById('overlay').style.display = 'none';
-document.getElementById('overlay').onclick = e => {
-  if (e.target === e.currentTarget)
-    e.currentTarget.style.display = 'none';
-};
+    // reveal motos
+    document.querySelectorAll('.motto').forEach(m=>{
+      new IntersectionObserver(entries=>{
+        entries.forEach(e=>e.target.classList.toggle('visible', e.isIntersecting));
+      },{threshold:0.2}).observe(m);
+    });
+
+    // popup
+    document.getElementById('joinBtn').onclick = ()=>document.getElementById('overlay').style.display='flex';
+    document.getElementById('closeBtn').onclick = ()=>document.getElementById('overlay').style.display='none';
+    document.getElementById('overlay').onclick = e=>{ if(e.target===e.currentTarget) e.currentTarget.style.display='none'; };
   </script>
 </body>
 </html>
