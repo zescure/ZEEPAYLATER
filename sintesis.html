@@ -16,11 +16,12 @@
       position: relative;
     }
 
-    /* full‐screen canvases */
+    /* full‐screen canvases responsive */
     #nebula, #stars {
       position: fixed;
       top: 0; left: 0;
-      width: 100%; height: 100%;
+      width: 100vw;
+      height: 100vh;
       display: block;
       z-index: -4;
     }
@@ -98,7 +99,7 @@
       background-size:200% 200%;
       opacity:0;
       transition: opacity .6s;
-      animation: borderMove 4s linear infinite;
+      animation: borderMove 6s linear infinite;
     }
     .motto.visible::before, .motto.visible::after, .motto.visible .side-left, .motto.visible .side-right {
       opacity:1;
@@ -311,7 +312,7 @@
   <div class="overlay" id="overlay">
     <div class="popup">
       <img src="https://via.placeholder.com/80x80.png?text=Logo" alt="Sintesis Logo" />
-      <div class="links">  
+      <div class="links">
         <a href="https://instagram.com/sintesisgroup" target="_blank">Instagram</a>
         <a href="https://t.me/sintesisgroup"      target="_blank">Telegram</a>
         <a href="https://wa.me/6281234567890"      target="_blank">WhatsApp</a>
@@ -321,7 +322,7 @@
   </div>
 
   <script>
-    // Nebula + galaxy + black hole
+    // Nebula + galaxy + black hole (lebih lambat swivel)
     const nebulaCanvas = document.getElementById('nebula');
     const nctx = nebulaCanvas.getContext('2d');
     let nw = nebulaCanvas.width  = innerWidth;
@@ -339,7 +340,8 @@
       nctx.save();
       nctx.translate(cx,cy);
       for(let i=0;i<arms;i++){
-        const ang = (i/arms)*Math.PI*2 + performance.now()*0.0001;
+        // pelan: faktor 0.00003
+        const ang = (i/arms)*Math.PI*2 + performance.now()*0.00003;
         nctx.rotate(ang);
         nctx.beginPath();
         nctx.moveTo(0,0);
@@ -374,32 +376,37 @@
       nh = nebulaCanvas.height = innerHeight;
     });
 
-    // Stars + meteors
+    // Stars + meteors (lebih lambat dan jarang)
     const starCanvas = document.getElementById('stars');
     const sctx = starCanvas.getContext('2d');
     let sw = starCanvas.width  = innerWidth;
     let sh = starCanvas.height = innerHeight;
-    const stars = Array.from({length:300},()=>{
+    const stars = Array.from({length:200},()=>{
       return { x:Math.random()*sw, y:Math.random()*sh,
-               r:Math.random()*1.2+0.3, d:Math.random()*1.5 };
+               r:Math.random()*1.0+0.2, d:Math.random()*1.0 };
     });
     const meteors = [];
     function spawnMeteor(){
       meteors.push({
         x:Math.random()*sw, y:0,
-        vx:(Math.random()*0.5+1)*2, vy:(Math.random()*0.2+0.5)*2,
-        len:Math.random()*80+50, alpha:1
+        vx:(Math.random()*0.3+0.5)*1.5,
+        vy:(Math.random()*0.1+0.3)*1.5,
+        len:Math.random()*60+30, alpha:1
       });
-      if(meteors.length>5) meteors.shift();
+      if(meteors.length>3) meteors.shift();
     }
-    setInterval(spawnMeteor,2000);
+    // spawn lebih jarang
+    setInterval(spawnMeteor,4000);
     function drawStars(){
       sctx.clearRect(0,0,sw,sh);
       stars.forEach(s=>{
         sctx.beginPath();
         sctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        sctx.fillStyle = `rgba(255,255,255,${s.d/2})`;
+        sctx.fillStyle = `rgba(255,255,255,${s.d/3})`;
         sctx.fill();
+        // gerak lebih lambat
+        s.y += s.d/4;
+        if(s.y>sh) s.y=0;
       });
       meteors.forEach(m=>{
         sctx.beginPath();
@@ -408,7 +415,7 @@
         sctx.strokeStyle = `rgba(255,255,255,${m.alpha})`;
         sctx.lineWidth=2;
         sctx.stroke();
-        m.x+=m.vx; m.y+=m.vy; m.alpha-=0.005;
+        m.x+=m.vx; m.y+=m.vy; m.alpha-=0.003;
       });
       while(meteors.length && meteors[0].alpha<=0) meteors.shift();
       requestAnimationFrame(drawStars);
@@ -421,8 +428,7 @@
 
     // scroll to motos
     document.getElementById('btnLearnMore').addEventListener('click', ()=>{
-      document.getElementById('motos')
-        .scrollIntoView({ behavior:'smooth' });
+      document.getElementById('motos').scrollIntoView({ behavior:'smooth' });
     });
 
     // reveal motos
