@@ -16,19 +16,21 @@
     }
     /* Space background layers */
         /* Space background layers */
-    body::before {
-      content: '';
-      position: fixed;
-      top:0; left:0; width:100%; height:100%;
-      background:
-        url('https://i.imgur.com/nebula1.jpg') center/cover no-repeat,    /* nebula berwarna-warni */
-        url('https://i.imgur.com/blackhole.png') center/contain no-repeat, /* lubang hitam */
-        url('https://i.imgur.com/galaxy1.jpg') center/cover no-repeat,    /* galaksi spiral */
-        url('https://i.imgur.com/quasar1.jpg') center/contain no-repeat;   /* quasar terang */
-      opacity: 0.6;
-      z-index: -3;
-      animation: rotateBG 200s linear infinite;
-    }
+    /* Space background layers */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background:
+    url('https://images.unsplash.com/photo-1519415943484-335c4175ae3b?auto=format&fit=crop&w=1920&h=1080') center/cover no-repeat,   /* nebula */
+    url('https://images.unsplash.com/photo-1560921231-240ec65d6c24?auto=format&fit=crop&w=800&h=800') center/contain no-repeat,    /* black hole */
+    url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1920&h=1080') center/cover no-repeat,   /* galaksi */
+    url('https://images.unsplash.com/photo-1533304606269-53a945a97ee4?auto=format&fit=crop&w=800&h=800') center/contain no-repeat;    /* quasar */
+  opacity: 0.7;
+  z-index: -3;
+  animation: rotateBG 200s linear infinite;
+}
     @keyframes rotateBG { to { transform: rotate(360deg); } }
     /* Stars canvas */
     #stars {
@@ -267,7 +269,8 @@
     }
     draw();
     window.onresize = ()=>{ w=canvas.width=innerWidth; h=canvas.height=innerHeight; };
-
+document.getElementById('btnLearnMore')
+  .addEventListener('click', () => document.getElementById('motos').scrollIntoView({ behavior: 'smooth' }));
     // scroll reveal
     document.querySelectorAll('.motto').forEach(m => {
       new IntersectionObserver(entries => {
