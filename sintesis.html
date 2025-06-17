@@ -4,314 +4,234 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Sintesis Group – Coming Soon</title>
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet" />
   <style>
-    /* RESET */
     * { margin:0; padding:0; box-sizing:border-box; }
-
-    /* BODY & SMOOTH SCROLL */
     html { scroll-behavior: smooth; }
     body {
       font-family: 'Montserrat', sans-serif;
       color: #fff;
+      background: #000;
       overflow-x: hidden;
     }
-
-    /* STARFIELD & SPACE LAYERS */
-    body::before, body::after {
-      content:"";
-      position: fixed; top:0; left:0;
-      width:100%; height:100%;
-      pointer-events:none;
-      z-index:-2;
-    }
-    /* background nebula / galaxy */
+    /* Space background layers */
     body::before {
+      content: '';
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
       background:
-        radial-gradient(circle at 30% 30%, rgba(150,180,255,0.3), transparent 50%),
-        radial-gradient(circle at 70% 80%, rgba(255,200,200,0.2), transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(200,255,200,0.1), transparent 60%),
-        #000;
-      animation: rotateGalaxy 120s linear infinite;
-      background-size: 200% 200%;
+        url('https://i.imgur.com/3aXbVhN.png') center/cover no-repeat, /* galaxy */
+        url('https://i.imgur.com/7QKXH0R.png') center/contain no-repeat, /* quasar */
+        url('https://i.imgur.com/CS8QY2I.png') center/contain no-repeat; /* black hole */
+      opacity: 0.5;
+      z-index: -3;
+      animation: rotateBG 120s linear infinite;
     }
-    @keyframes rotateGalaxy {
-      from { transform: rotate(0deg) scale(1.1); }
-      to   { transform: rotate(360deg) scale(1.1); }
+    @keyframes rotateBG { to { transform: rotate(360deg); } }
+    /* Stars canvas */
+    #stars {
+      position: fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      z-index: -2;
     }
-    /* starfield */
-    body::after {
-      background: 
-        radial-gradient(1px 1px at 20% 30%, #fff, transparent),
-        radial-gradient(1px 1px at 40% 70%, #fff, transparent),
-        radial-gradient(1px 1px at 60% 20%, #fff, transparent),
-        radial-gradient(1px 1px at 80% 50%, #fff, transparent),
-        radial-gradient(1px 1px at 10% 80%, #fff, transparent),
-        radial-gradient(1px 1px at 50% 10%, #fff, transparent);
-      background-size: 100px 100px;
-      animation: twinkle 5s infinite;
-    }
-    @keyframes twinkle {
-      0%,100% { opacity: .5; }
-      50%     { opacity: 1; }
-    }
-
-    /* SECTION STYLES */
-    section { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
-    .welcome {
-      flex-direction: column;
-      text-align: center;
-      background: rgba(0,0,0,0.4);
-    }
-    .welcome h1 {
-      font-size: 2.5rem; margin-bottom:0.5em;
-      text-shadow: 0 0 10px rgba(0,0,0,0.5);
-      animation: fadeIn 2s ease both;
-    }
-    .welcome p {
-      font-size: 1.1rem; max-width:600px;
-      margin-bottom:1.5em; line-height:1.5;
-      animation: fadeIn 2s ease both;
-      animation-delay:0.5s;
-    }
-    .welcome .btn {
-      padding:0.8em 2em; font-size:1rem;
-      background: rgba(255,255,255,0.15); border:2px solid #fff; border-radius:50px;
-      cursor:pointer; transition: all .3s ease;
-      animation: fadeIn 2s ease both;
-      animation-delay:1s;
-    }
-    .welcome .btn:hover {
-      background: #fff; color: #111;
-    }
-
-    @keyframes fadeIn {
-      from { opacity:0; transform: translateY(20px); }
-      to   { opacity:1; transform: translateY(0); }
-    }
-
-    /* MOTTO SECTION */
-    .motto-section { padding-top:60px; padding-bottom:60px; max-width:800px; margin:0 auto; }
-    .motto {
-      position: relative; margin:60px 0; padding:20px 30px;
-      background: rgba(0,0,0,0.5); border-radius:8px;
-      opacity:0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease;
-    }
+    /* Sections */
+    section { min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 20px; }
+    #welcome { background: rgba(0,0,0,0.4); }
+    #motos { background: rgba(0,0,0,0.6); }
+    h1 { font-size:3rem; letter-spacing:2px; margin-bottom:0.5em; text-shadow:0 0 10px rgba(0,0,0,0.5); }
+    p.lead { font-size:1.1rem; max-width:600px; line-height:1.5; margin: 0 auto 1.5em; }
+    .btn { padding:0.8em 2em; font-size:1rem; background:rgba(255,255,255,0.1); border:2px solid #0af; border-radius:50px; cursor:pointer; color:#0af; transition: all .3s; }
+    .btn:hover { background:#0af; color:#111; }
+    /* Motto layout */
+    .motto { position: relative; margin:60px 0; padding:20px 30px; opacity:0; transform: translateY(30px); transition: all .6s ease; }
     .motto.visible { opacity:1; transform: translateY(0); }
-    .motto h2 { font-size:1.3rem; font-weight:600; transition: color .3s; }
-    .motto p { font-size:0.9rem; opacity:.85; margin-top:8px; transition: color .3s; }
-    .motto .small-text {
-      font-size:0.75rem; opacity:.6; margin-top:6px; line-height:1.4; transition: color .3s;
-    }
-    /* gradient borders */
+    .motto h2 { font-size:1.3rem; font-weight:600; margin-bottom:0.3em; transition: color .3s; }
+    .motto p { font-size:0.9rem; opacity:0.85; margin-bottom:0.4em; transition: color .3s; }
+    .motto .small-text { font-size:0.75rem; opacity:0.6; line-height:1.3; transition: color .3s; }
     .motto::before, .motto::after, .motto .side-left, .motto .side-right {
-      content:''; position:absolute; background:linear-gradient(90deg,#0af,#f0f,#0af);
-      background-size:200% 200%; opacity:0; transition: opacity .6s ease;
+      content: ''; position:absolute; background: linear-gradient(90deg,#0af,#f0f,#0af);
+      background-size:200% 200%; opacity:0; transition: opacity .6s;
       animation: borderMove 4s linear infinite;
     }
     .motto.visible::before, .motto.visible::after, .motto.visible .side-left, .motto.visible .side-right {
       opacity:1;
     }
     .motto::before { top:0; left:0; width:100%; height:2px; }
-    .motto::after { bottom:0; right:0; width:2px; height:100%; animation-direction:reverse; }
-    .motto .side-left { top:0; left:0; width:2px; height:100%; }
+    .motto::after  { bottom:0; right:0; width:2px; height:100%; animation-direction:reverse; }
+    .motto .side-left  { top:0; left:0; width:2px; height:100%; }
     .motto .side-right { bottom:0; right:0; width:100%; height:2px; animation-direction:reverse; }
-    @keyframes borderMove {
-      0%   { background-position:0% 50%; }
-      50%  { background-position:100% 50%; }
-      100% { background-position:0% 50%; }
-    }
-    /* hover */
+    @keyframes borderMove { 0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;} }
     .motto:hover h2, .motto:hover p, .motto:hover .small-text { color:#0af; }
     .motto:hover::before, .motto:hover::after, .motto:hover .side-left, .motto:hover .side-right {
-      background:linear-gradient(90deg,#f0f,#0af,#f0f);
+      background: linear-gradient(90deg,#f0f,#0af,#f0f);
     }
-
-    /* JOIN BUTTON */
-    .btn-join {
-      display:block; margin:40px auto 0;
-      padding:0.8em 2em; font-size:1rem;
-      background:rgba(255,255,255,0.1); border:2px solid #fff; border-radius:50px;
-      cursor:pointer; transition:all .3s ease;
-    }
-    .btn-join:hover { background:#fff; color:#111; }
-
-    /* POPUP */
-    .overlay {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.85); display:none;
-      align-items:center; justify-content:center; z-index:10;
-    }
-    .popup {
-      background:#111; padding:30px; border-radius:8px; text-align:center;
-      max-width:320px; animation: popupIn .5s ease;
-    }
-    @keyframes popupIn { from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);} }
+    /* Popup */
+    .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center; z-index:10; }
+    .popup { background:#111; padding:30px; border-radius:8px; text-align:center; max-width:320px; }
     .popup img { width:80px; margin-bottom:1em; }
-    .popup .links a {
-      display:block; color:#fff; margin:0.5em 0; text-decoration:none;
-      transition:color .2s;
-    }
-    .popup .links a:hover { color:#0af; }
-    .popup .close-btn { margin-top:1em; cursor:pointer; font-size:0.8rem; text-decoration:underline; }
-
+    .links a { display:block; color:#0af; margin:0.5em 0; text-decoration:none; transition:color .2s; }
+    .links a:hover { color:#fff; }
+    .close-btn { margin-top:1em; cursor:pointer; font-size:0.8rem; text-decoration:underline; color:#888; }
   </style>
 </head>
 <body>
 
-  <!-- WELCOME SECTION -->
-  <section class="welcome">
-    <h1>Selamat Datang di Sintesis Group</h1>
-    <p>
-      Kami datang dari kekurangan masing-masing untuk membuat keutuhan  
-      tapi bukan melawan Tuhan seperti zaman dunia masih satu bahasa dan menara tinggi.
-    </p>
-    <button class="btn" onclick="document.getElementById('motto').scrollIntoView()">
-      Ingin tahu lebih banyak
-    </button>
+  <canvas id="stars"></canvas>
+
+  <section id="welcome">
+    <div>
+      <h1>Selamat Datang di Sintesis Group</h1>
+      <p class="lead">
+        Kami datang dari kekurangan masing-masing untuk membuat keutuhan —  
+        tapi bukan melawan Tuhan seperti zaman dunia masih satu bahasa dan Menara Tinggi.
+      </p>
+      <button class="btn" onclick="document.getElementById('motos').scrollIntoView()">Ingin tahu lebih banyak</button>
+    </div>
   </section>
 
-  <!-- MOTTO & DETAILS -->
-  <section id="motto" class="motto-section">
-    <!-- Loop through each of the 13 moto blocks -->
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Yang kami tau kami tidak tau.”</h2>
-      <p>Epistemologi – Filosofi kerendahan hati dan keterbukaan belajar.</p>
-      <p class="small-text">
-        Tujuan: Membangun budaya keingintahuan dan kerendahan hati.<br>
-        Makna: Merendah di hadapan pengetahuan.<br>
-        Kategori: Filsafat / Epistemologi.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Kami merangkul bukan karena siapa itu penting tapi kami merangkul ketidaktahuan alih-alih netral.”</h2>
-      <p>Inklusi – Komunitas terbuka berdasar kesadaran akan keterbatasan.</p>
-      <p class="small-text">
-        Tujuan: Menciptakan ruang inklusif bagi semua pelajar.<br>
-        Makna: Mengutamakan kesadaran keterbatasan di atas status.<br>
-        Kategori: Sosial / Kultural / Etika.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Positif sum is big dream no money not lamborghini.”</h2>
-      <p>Ekonomi – Visi win-win, bukan flexing atau konsumsi berlebihan.</p>
-      <p class="small-text">
-        Tujuan: Mendorong model ekonomi kolaboratif.<br>
-        Makna: Besarkan ‘kue’ bersama, bukan rebutan remah.<br>
-        Kategori: Ekonomi / Realisme.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Kritis bukan berarti atheis.”</h2>
-      <p>Spiritualitas – Skeptisisme tanpa mengingkari keyakinan.</p>
-      <p class="small-text">
-        Tujuan: Menyatukan pemikiran kritis dan iman.<br>
-        Makna: Bertanya tajam, tetap berpegang pada keyakinan.<br>
-        Kategori: Spiritualitas / Filsafat.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Budaya untuk sejarah bukan sebagai sesembahan (menuhankan hal mistis dari tuhan itu sendiri).”</h2>
-      <p>Budaya – Menghormati akar tanpa terjerat mistik.</p>
-      <p class="small-text">
-        Tujuan: Memuliakan warisan budaya secara rasional.<br>
-        Makna: Hormat sejarah tanpa mistifikasi.<br>
-        Kategori: Budaya / Anti-mistisisme.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Bukan jadi yang terbaik tapi melengkapi kekurangan.”</h2>
-      <p>Kolaborasi – Kontribusi saling isi, bukan kompetisi sempit.</p>
-      <p class="small-text">
-        Tujuan: Membangun sinergi tim yang solid.<br>
-        Makna: Fokus pada kontribusi, bukan dominasi.<br>
-        Kategori: Etika kerja / Kolaborasi.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Kami berkumpul bukan untuk perut tapi keadilan, kita tahu bahwa keadilan murni itu ga ada jadi keadilan kami basisnya matematika.”</h2>
-      <p>Keadilan – Rasional, terukur, berbasis logika.</p>
-      <p class="small-text">
-        Tujuan: Menegakkan hak secara objektif.<br>
-        Makna: Keadilan dihitung, bukan dipersepsi.<br>
-        Kategori: Sosial / Politik / Logika.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Semua yang ada dijaringan kami belajar sesuai minatnya bukan whats trending now.”</h2>
-      <p>Edukasi – Pertumbuhan personal, bukan ikut-ikutan tren.</p>
-      <p class="small-text">
-        Tujuan: Mengembangkan minat sejati setiap anggota.<br>
-        Makna: Belajar berkualitas, bukan demi popularitas.<br>
-        Kategori: Edukasi / Anti-influencer.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Ai bukan untuk ditakuti tapi dipahami dan dikuasai.”</h2>
-      <p>Teknologi – AI sebagai alat pemberdayaan, bukan ancaman.</p>
-      <p class="small-text">
-        Tujuan: Memberdayakan manusia melalui AI.<br>
-        Makna: AI alat, bukan dewa baru.<br>
-        Kategori: Teknologi / Etika Inovasi.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Kontra kuat kami kepada hal mistis.”</h2>
-      <p>Logika – Menolak klenik, menghargai akal.</p>
-      <p class="small-text">
-        Tujuan: Meluruskan kepercayaan tanpa dasar ilmiah.<br>
-        Makna: Rasionalitas di atas takhayul.<br>
-        Kategori: Spiritualitas / Logika.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Hukum murphy.”</h2>
-      <p>Realisme – Sadar risiko, selalu siapkan rencana cadangan.</p>
-      <p class="small-text">
-        Tujuan: Meningkatkan mitigasi risiko dalam setiap rencana.<br>
-        Makna: Apa pun yang bisa salah, harus siap antisipasi.<br>
-        Kategori: Realisme / Logika Hidup.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Tempat berkumpulnya para pemahaman filsuf,agama khusus islam golden era,sains,bahasa tuhan(matematika),psikologi,game theory,madilog, menjadi 1 perdebatan positif.”</h2>
-      <p>Integrasi Ilmu – Forum lintas disiplin untuk diskusi mendalam.</p>
-      <p class="small-text">
-        Tujuan: Menjadi think-tank organik multidisiplin.<br>
-        Makna: Menyatukan berbagai aliran ilmu dalam dialog positif.<br>
-        Kategori: Knowledge & Filsafat Terpadu.
-      </p>
-      <span class="side-right"></span>
-    </div>
-    <div class="motto"><span class="side-left"></span>
-      <h2>“Pengikut Agama yang sehat harus meninggalkan sesuatu yang bermanfaat dan membekas bukan sekedar dakwah (jangan kejar dunia karena apa yang ada didunia ga bisa dibawa ke akhirat)”</h2>
-      <p>Amal – Dakwah lewat kontribusi nyata, bukan retorika kosong.</p>
-      <p class="small-text">
-        Tujuan: Mengubah dakwah menjadi aksi sosial berkelanjutan.<br>
-        Makna: Iman terukur lewat karya yang membekas.<br>
-        Kategori: Spiritualitas / Amal Nyata.
-      </p>
-      <span class="side-right"></span>
-    </div>
+  <section id="motos">
+    <div class="container">
+      <h1>Our Motos</h1>
 
-    <button class="btn-join" id="joinBtn">Ingin menjadi bagian dari Sintesis</button>
+      <!-- 1 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Yang kami tau kami tidak tau.”</h2>
+        <p>Epistemologi – Filosofi kerendahan hati dan keterbukaan belajar.</p>
+        <p class="small-text">
+          Tujuan: Membangun budaya keingintahuan dan kerendahan hati.<br>
+          Makna: Merendah di hadapan pengetahuan.<br>
+          Kategori: Filsafat / Epistemologi.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 2 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Kami merangkul bukan karena siapa itu penting tapi kami merangkul ketidaktahuan alih-alih netral.”</h2>
+        <p>Inklusi – Komunitas terbuka berdasar kesadaran akan keterbatasan.</p>
+        <p class="small-text">
+          Tujuan: Menciptakan ruang inklusif bagi semua pelajar.<br>
+          Makna: Mengutamakan kesadaran keterbatasan di atas status.<br>
+          Kategori: Sosial / Kultural / Etika.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 3 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Positif sum is big dream no money not lamborghini.”</h2>
+        <p>Ekonomi – Visi win-win, bukan flexing atau konsumsi berlebihan.</p>
+        <p class="small-text">
+          Tujuan: Mendorong model ekonomi kolaboratif.<br>
+          Makna: Besarkan ‘kue’ bersama, bukan rebutan remah.<br>
+          Kategori: Ekonomi / Realisme.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 4 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Kritis bukan berarti atheis.”</h2>
+        <p>Spiritualitas – Skeptisisme tanpa mengingkari keyakinan.</p>
+        <p class="small-text">
+          Tujuan: Menyatukan pemikiran kritis dan iman.<br>
+          Makna: Bertanya tajam, tetap berpegang pada keyakinan.<br>
+          Kategori: Spiritualitas / Filsafat.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 5 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Budaya untuk sejarah bukan sebagai sesembahan (menuhankan hal mistis dari tuhan itu sendiri).”</h2>
+        <p>Budaya – Menghormati akar tanpa terjerat mistik.</p>
+        <p class="small-text">
+          Tujuan: Memuliakan warisan budaya secara rasional.<br>
+          Makna: Hormat sejarah tanpa mistifikasi.<br>
+          Kategori: Budaya / Anti-mistisisme.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 6 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Bukan jadi yang terbaik tapi melengkapi kekurangan.”</h2>
+        <p>Kolaborasi – Kontribusi saling isi, bukan kompetisi sempit.</p>
+        <p class="small-text">
+          Tujuan: Membangun sinergi tim yang solid.<br>
+          Makna: Fokus pada kontribusi, bukan dominasi.<br>
+          Kategori: Etika kerja / Kolaborasi.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 7 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Kami berkumpul bukan untuk perut tapi keadilan, kita tahu bahwa keadilan murni itu ga ada jadi keadilan kami basisnya matematika.”</h2>
+        <p>Keadilan – Rasional, terukur, berbasis logika.</p>
+        <p class="small-text">
+          Tujuan: Menegakkan hak secara objektif.<br>
+          Makna: Keadilan dihitung, bukan dipersepsi.<br>
+          Kategori: Sosial / Politik / Logika.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 8 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Semua yang ada dijaringan kami belajar sesuai minatnya bukan whats trending now.”</h2>
+        <p>Edukasi – Pertumbuhan personal, bukan ikut-ikutan tren.</p>
+        <p class="small-text">
+          Tujuan: Mengembangkan minat sejati setiap anggota.<br>
+          Makna: Belajar berkualitas, bukan demi popularitas.<br>
+          Kategori: Edukasi / Anti-influencer.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 9 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Ai bukan untuk ditakuti tapi dipahami dan dikuasai.”</h2>
+        <p>Teknologi – AI sebagai alat pemberdayaan, bukan ancaman.</p>
+        <p class="small-text">
+          Tujuan: Memberdayakan manusia melalui AI.<br>
+          Makna: AI alat, bukan dewa baru.<br>
+          Kategori: Teknologi / Etika Inovasi.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 10 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Kontra kuat kami kepada hal mistis.”</h2>
+        <p>Logika – Menolak klenik, menghargai akal.</p>
+        <p class="small-text">
+          Tujuan: Meluruskan kepercayaan tanpa dasar ilmiah.<br>
+          Makna: Rasionalitas di atas takhayul.<br>
+          Kategori: Spiritualitas / Logika.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 11 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Hukum murphy.”</h2>
+        <p>Realisme – Sadar risiko, selalu siapkan rencana cadangan.</p>
+        <p class="small-text">
+          Tujuan: Meningkatkan mitigasi risiko dalam setiap rencana.<br>
+          Makna: Apa pun yang bisa salah, harus siap antisipasi.<br>
+          Kategori: Realisme / Logika Hidup.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 12 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Tempat berkumpulnya para pemahaman filsuf,agama khusus islam golden era,sains,bahasa tuhan(matematika),psikologi,game theory,madilog, menjadi 1 perdebatan positif.”</h2>
+        <p>Integrasi Ilmu – Forum lintas disiplin untuk diskusi mendalam.</p>
+        <p class="small-text">
+          Tujuan: Menjadi think-tank organik multidisiplin.<br>
+          Makna: Menyatukan berbagai aliran ilmu dalam dialog positif.<br>
+          Kategori: Knowledge & Filsafat Terpadu.
+        </p><span class="side-right"></span>
+      </div>
+      <!-- 13 -->
+      <div class="motto"><span class="side-left"></span>
+        <h2>“Pengikut Agama yang sehat harus meninggalkan sesuatu yang bermanfaat dan membekas bukan sekedar dakwah (jangan kejar dunia karena apa yang ada didunia ga bisa dibawa ke akhirat)”</h2>
+        <p>Amal – Dakwah lewat kontribusi nyata, bukan retorika kosong.</p>
+        <p class="small-text">
+          Tujuan: Mengubah dakwah menjadi aksi sosial berkelanjutan.<br>
+          Makna: Iman terukur lewat karya yang membekas.<br>
+          Kategori: Spiritualitas / Amal Nyata.
+        </p><span class="side-right"></span>
+      </div>
+
+      <button class="btn" id="joinBtn">Ingin menjadi bagian dari Sintesis</button>
+    </div>
   </section>
 
-  <!-- POPUP OVERLAY -->
   <div class="overlay" id="overlay">
     <div class="popup">
-      <img src="https://via.placeholder.com/80x80.png?text=Logo" alt="Sintesis Logo"/>
+      <img src="https://via.placeholder.com/80x80.png?text=Logo" alt="Sintesis Logo" />
       <div class="links">
         <a href="https://instagram.com/sintesisgroup" target="_blank">Instagram</a>
         <a href="https://t.me/sintesisgroup" target="_blank">Telegram</a>
@@ -322,20 +242,41 @@
   </div>
 
   <script>
+    // stars canvas
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = innerWidth;
+    let h = canvas.height = innerHeight;
+    const stars = Array.from({length:200}, () => ({
+      x: Math.random()*w, y: Math.random()*h,
+      r: Math.random()*1.2, d: Math.random()*2
+    }));
+    function draw() {
+      ctx.clearRect(0,0,w,h);
+      stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255,255,255,'+ (s.d/2) +')';
+        ctx.fill();
+        s.y += s.d/2;
+        if (s.y>h) s.y = 0;
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+    window.onresize = ()=>{ w=canvas.width=innerWidth; h=canvas.height=innerHeight; };
+
     // scroll reveal
-    const mottos = document.querySelectorAll('.motto');
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e=> e.target.classList.toggle('visible', e.isIntersecting));
-    }, { threshold:0.2 });
-    mottos.forEach(m=>obs.observe(m));
+    document.querySelectorAll('.motto').forEach(m => {
+      new IntersectionObserver(entries => {
+        entries.forEach(e => e.target.classList.toggle('visible', e.isIntersecting));
+      }, {threshold:0.2}).observe(m);
+    });
 
     // popup
-    document.getElementById('joinBtn')
-      .addEventListener('click', ()=> document.getElementById('overlay').style.display='flex');
-    document.getElementById('closeBtn')
-      .addEventListener('click', ()=> document.getElementById('overlay').style.display='none');
-    document.getElementById('overlay')
-      .addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.style.display='none'; });
+    document.getElementById('joinBtn').onclick = ()=> document.getElementById('overlay').style.display='flex';
+    document.getElementById('closeBtn').onclick = ()=> document.getElementById('overlay').style.display='none';
+    document.getElementById('overlay').onclick = e=>{ if(e.target===e.currentTarget) e.currentTarget.style.display='none'; };
   </script>
 </body>
 </html>
