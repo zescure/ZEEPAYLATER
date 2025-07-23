@@ -263,37 +263,69 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <i class="fas fa-bolt"></i> ZEEPAYLATER
-            </div>
-            <div class="profile-icon">
-                <i class="fas fa-user"></i>
-            </div>
+ <!-- Firebase Auth Check -->
+  <script type="module">
+    // Firebase SDK imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
+    authDomain: "zeepaylater-93a94.firebaseapp.com",
+    projectId: "zeepaylater-93a94",
+      appId: "1:358065954807:web:66619211fea82a4b2518f2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Cek apakah user udah login
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        const email = prompt("Masukkan Email:");
+        const password = prompt("Masukkan Password:");
+
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            alert("Login berhasil!");
+            location.reload();
+          })
+          .catch((error) => {
+            alert("Login gagal: " + error.message);
+          });
+      }
+    });
+  </script>
+
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <i class="fas fa-bolt"></i> ZEEPAYLATER
+      </div>
+      <div class="profile-icon">
+        <i class="fas fa-user"></i>
+      </div>
+    </div>
+
+    <div class="balance-card">
+      <div class="balance-title">Saldo ZEEPAYLATER</div>
+      <div class="balance-amount">Rp 1.500.000</div>
+      <div class="paylater-info">
+        <div class="paylater-limit">
+          Limit paylater: <span>Rp 2.000.000</span>
         </div>
-        
-        <div class="balance-card">
-            <div class="balance-title">Saldo ZEEPAYLATER</div>
-            <div class="balance-amount">Rp 1.500.000</div>
-            <div class="paylater-info">
-                <div class="paylater-limit">
-                    Limit paylater: <span>Rp 2.000.000</span>
-                </div>
-       
-                <button class="pay-now-btn">
-                    <i class="fas fa-wallet"></i> Bayar Cicilan
-                </button>
-            </div>
-            <marquee behavior="alternate">Jatuh Tempo Tagihan Anda: Tanggal 1 Setiap Bulan</marquee>
-        </div>
-        
-        <div id="moving-text-container">
-        <div id="moving-text">
-               Selamat datang di ZEEPAYLATER! ZEZY NZY
-        </div>
-        </div>
+
+        <button class="pay-now-btn">
+          <i class="fas fa-wallet"></i> Bayar Cicilan
+        </button>
+      </div>
+      <marquee behavior="alternate">Jatuh Tempo Tagihan Anda: Tanggal 1 Setiap Bulan</marquee>
+    </div>
+
+    <div id="moving-text-container">
+      <div id="moving-text">
+        Selamat datang di ZEEPAYLATER! ZEZY NZY
+      </div>
         
         <div class="menu-grid">
             <div class="menu-item">
