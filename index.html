@@ -263,36 +263,21 @@
         }
     </style>
 </head>
- <!-- Firebase Auth Check -->
+ <body>
   <script type="module">
-    // Firebase SDK imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { auth } from './firebase-config.js';
+    import {
+      onAuthStateChanged,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDVUEZ3ZVmH4ld7LVnEq_L368wEJpEs-l8",
-    authDomain: "zeepaylater-93a94.firebaseapp.com",
-    projectId: "zeepaylater-93a94",
-      appId: "1:358065954807:web:66619211fea82a4b2518f2"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // Cek apakah user udah login
     onAuthStateChanged(auth, (user) => {
       if (!user) {
         const email = prompt("Masukkan Email:");
         const password = prompt("Masukkan Password:");
-
         signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            alert("Login berhasil!");
-            location.reload();
-          })
-          .catch((error) => {
-            alert("Login gagal: " + error.message);
-          });
+          .then(() => location.reload())
+          .catch((e) => alert("Login gagal: " + e.message));
       }
     });
   </script>
@@ -314,7 +299,6 @@
         <div class="paylater-limit">
           Limit paylater: <span>Rp 2.000.000</span>
         </div>
-
         <button class="pay-now-btn">
           <i class="fas fa-wallet"></i> Bayar Cicilan
         </button>
@@ -326,6 +310,7 @@
       <div id="moving-text">
         Selamat datang di ZEEPAYLATER! ZEZY NZY
       </div>
+    </div>
         
         <div class="menu-grid">
             <div class="menu-item">
